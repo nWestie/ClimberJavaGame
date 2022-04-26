@@ -51,8 +51,9 @@ public class Menu extends JPanel {
 		for (DrawableRect l : menuObjs)
 			l.draw(g2d);
 		g2d.setColor(Color.white);
-		g2d.drawString(String.format("(%d, %d) lsel: %d", mouseX, mouseY, levelSel), 20, 80);
 
+//		g2d.drawString(String.format("(%d, %d) lsel: %d",mouseX, mouseY, levelSel),20,80);
+		
 	}
 
 	private class MouseEvents extends MouseAdapter {
