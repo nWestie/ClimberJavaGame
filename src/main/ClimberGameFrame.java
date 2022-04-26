@@ -1,11 +1,12 @@
 package main;
+
 import java.awt.Color;
 import java.awt.Container;
 import java.awt.Frame;
 
 import javax.swing.JFrame;
 
-public class ClimberGameFrame extends JFrame{
+public class ClimberGameFrame extends JFrame {
 	private static final long serialVersionUID = 1L;
 
 	public ClimberGameFrame(String s) {
@@ -27,7 +28,7 @@ public class ClimberGameFrame extends JFrame{
 		frame.setVisible(true);
 		Menu menu = new Menu(frame);
 		cont.add(menu);
-		while(true) {
+		while (true) {
 			int levelNum = menu.waitForSelection();
 			cont.remove(menu);
 			Level l1 = new Level1(frame);
