@@ -37,7 +37,7 @@ for node in doc.topLevelNodes():
   if(node.name()[0:2] == "[]"):
     path = os.path.join(exportDir, node.name()[2:] + ".png")
     node.save(path, doc.resolution(), doc.resolution(), info, bounds)
-    print(node.name(), "full size")
+    #print(node.name(), "full size")
   else:
     path = os.path.join(exportDir, node.name() + ".png")
     node.save(path, doc.resolution(), doc.resolution(), info)
