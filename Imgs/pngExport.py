@@ -9,12 +9,11 @@ bounds = doc.bounds()
 expDirName = os.path.basename(doc.fileName())
 expDirName = os.path.splitext(expDirName)[0]
 exportDir = os.path.join(wdir, expDirName)
-
+print("Saving to \"", exportDir, "\"")
 if not os.path.isdir(exportDir):
   os.makedirs(exportDir)
 else:
   for file in os.listdir(exportDir):
-    # print(file)
     os.remove(os.path.join(exportDir,file))
 
 Application.setBatchmode(True)
@@ -37,10 +36,11 @@ for node in doc.topLevelNodes():
   if(node.name()[0:2] == "[]"):
     path = os.path.join(exportDir, node.name()[2:] + ".png")
     node.save(path, doc.resolution(), doc.resolution(), info, bounds)
-    #print(node.name(), "full size")
+    print("saved", node.name(), "full size")
   else:
     path = os.path.join(exportDir, node.name() + ".png")
     node.save(path, doc.resolution(), doc.resolution(), info)
+    print("saved", node.name())
 
 Application.setBatchmode(False)
-print("Finished png export")
+print("Finished PNG export")

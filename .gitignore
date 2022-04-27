@@ -25,3 +25,9 @@
 hs_err_pid*
 
 /bin/
+
+# krita backups
+**~
+**autosave**
+**/__pycache__/
+
