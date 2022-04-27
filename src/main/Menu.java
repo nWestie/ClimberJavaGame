@@ -53,7 +53,7 @@ public class Menu extends JPanel {
 		g2d.setColor(Color.white);
 
 //		g2d.drawString(String.format("(%d, %d) lsel: %d",mouseX, mouseY, levelSel),20,80);
-		
+
 	}
 
 	private class MouseEvents extends MouseAdapter {
@@ -81,7 +81,8 @@ public class Menu extends JPanel {
 					else {
 						switch (((MenuText) l).string) {
 						case "PLAY":
-							playLevel = true;
+							if (levelSel > 0)
+								playLevel = true;
 							break;
 						case "EXIT":
 							System.exit(0);

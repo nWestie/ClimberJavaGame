@@ -13,9 +13,11 @@ print("Saving to \"", exportDir, "\"")
 if not os.path.isdir(exportDir):
   os.makedirs(exportDir)
 else:
-  for file in os.listdir(exportDir):
-    os.remove(os.path.join(exportDir,file))
-
+  try:
+    for file in os.listdir(exportDir):
+      os.remove(os.path.join(exportDir,file))
+  except:
+      print("Error deleting", file)
 Application.setBatchmode(True)
 
 for node in doc.topLevelNodes():

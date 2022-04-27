@@ -18,4 +18,7 @@ public class Level extends JPanel {
 	public void paintComponent(Graphics g) {
 		Graphics2D g2d = scaler.scale(g);
 	}
+
+	public void play() {
+	}
 }

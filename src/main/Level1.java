@@ -10,7 +10,7 @@ public class Level1 extends Level {
 
 	public Level1(Container cont) {
 		super(cont);
-		plr = new Player(100,100);
+		plr = new Player(300,400);
 	}
 
 	@Override
@@ -19,5 +19,14 @@ public class Level1 extends Level {
 		g2d.setColor(Pallete.greyBrown);
 		g2d.fill(scaler.drawSize());
 		plr.draw(g2d);
+	}
+	public void play() {
+		long nextLoopTime;
+		while(true) {
+			nextLoopTime = System.currentTimeMillis()+1000/24;
+			plr.updatePhysics();
+			repaint();
+			while(System.currentTimeMillis()<nextLoopTime);
+		}
 	}
 }

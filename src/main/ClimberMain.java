@@ -27,14 +27,15 @@ public class ClimberMain extends JFrame {
 		cont.setBackground(Color.black);
 		cont.setLayout(null);
 		frame.setVisible(true);
-		Menu menu = new Menu(frame);
-		cont.add(menu);
 		while (true) {
-			int levelNum = menu.waitForSelection();
-			cont.remove(menu);
+//			Menu menu = new Menu(frame);
+//			cont.add(menu);
+//			int levelNum = menu.waitForSelection();
+//			cont.remove(menu);
 			Level l1 = new Level1(frame);
 			cont.add(l1);
 			frame.repaint();
+			l1.play();
 		}
 	}
 
