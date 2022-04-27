@@ -6,17 +6,18 @@ import java.awt.Frame;
 
 import javax.swing.JFrame;
 
-public class ClimberGameFrame extends JFrame {
+public class ClimberMain extends JFrame {
 	private static final long serialVersionUID = 1L;
+	protected static final String dir = System.getProperty("user.dir");
 
-	public ClimberGameFrame(String s) {
+	public ClimberMain(String s) {
 		super(s);
 
 	}
 
 	public static void main(String[] args) {
 		// TODO Auto-generated method stub
-		ClimberGameFrame frame = new ClimberGameFrame("Climber");
+		ClimberMain frame = new ClimberMain("Climber");
 		frame.setExtendedState(Frame.MAXIMIZED_BOTH);
 //		frame.setBounds(10,10,1200,500);
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);

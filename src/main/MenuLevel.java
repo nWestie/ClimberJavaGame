@@ -1,14 +1,11 @@
 package main;
 
 import java.awt.Font;
-import java.awt.Graphics;
 import java.awt.Graphics2D;
-import java.awt.Rectangle;
 import java.awt.image.BufferedImage;
-import java.io.IOException;
+import java.io.File;
 
 import javax.imageio.ImageIO;
-import javax.swing.JPanel;
 
 public class MenuLevel extends DrawableRect{
 	static BufferedImage playedImg, selectedImg, defaultImg;
@@ -20,9 +17,9 @@ public class MenuLevel extends DrawableRect{
 		this.played = played;
 		if(playedImg!=null)return;//only add images once
 		try {
-			playedImg = ImageIO.read(ClassLoader.getSystemResource("playedLevel.png"));
-			selectedImg = ImageIO.read(ClassLoader.getSystemResource("selectedLevel.png"));
-			defaultImg = ImageIO.read(ClassLoader.getSystemResource("defaultLevel.png"));
+			playedImg = ImageIO.read(new File(ClimberMain.dir, "/Imgs/meunObjs/PlayedLevel.png"));
+			selectedImg = ImageIO.read(new File(ClimberMain.dir, "/Imgs/meunObjs/SelLevel.png"));
+			defaultImg = ImageIO.read(new File(ClimberMain.dir, "/Imgs/meunObjs/StdLevel.png"));
 		} catch (Exception e) {
 			System.out.println("Error loading menu image");
 			e.printStackTrace();

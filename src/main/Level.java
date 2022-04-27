@@ -11,7 +11,7 @@ public class Level extends JPanel {
 	protected FScale scaler;
 
 	public Level(Container cont) {
-		scaler = new FScale(cont, this, 1600, 900);
+		scaler = new FScale(cont, this, 1920, 1080);
 	}
 
 	@Override

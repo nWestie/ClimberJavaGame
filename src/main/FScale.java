@@ -1,10 +1,11 @@
 package main;
 
+import java.awt.Container;
+import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Rectangle;
-import java.awt.Container;
-import java.awt.Dimension;
+
 import javax.swing.JPanel;
 
 /**
@@ -14,6 +15,7 @@ import javax.swing.JPanel;
 public class FScale {
 	protected Rectangle bounds;
 	protected double scale;
+	private Rectangle drawSize;
 
 	public FScale(Container cont, JPanel obj, int w, int h) {
 		Dimension size = cont.getSize();
@@ -24,6 +26,7 @@ public class FScale {
 		int actH = (int) (h * scale);
 		bounds = new Rectangle((int) (size.getWidth() - actW) / 2, (int) (size.getHeight() - actH) / 2, actW, actH);
 		obj.setBounds(bounds);
+		drawSize = new Rectangle(0,0,w,h);
 	}
 
 	/**
@@ -45,6 +48,9 @@ public class FScale {
 	 */
 	public Rectangle getSize() {
 		return (Rectangle) bounds.clone();
+	}
+	public Rectangle drawSize() {
+		return drawSize;
 	}
 
 	/**

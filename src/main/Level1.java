@@ -5,15 +5,19 @@ import java.awt.Container;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 
-public class Level1 extends Level{
+public class Level1 extends Level {
+	protected Player plr;
 
 	public Level1(Container cont) {
 		super(cont);
+		plr = new Player(100,100);
 	}
+
 	@Override
 	public void paintComponent(Graphics g) {
 		Graphics2D g2d = scaler.scale(g);
-		g2d.setColor(Color.red);
-		g2d.fillRect(0, 0, 1600, 900);
+		g2d.setColor(Pallete.greyBrown);
+		g2d.fill(scaler.drawSize());
+		plr.draw(g2d);
 	}
 }
