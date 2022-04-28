@@ -1,10 +1,9 @@
 package main;
 
+import java.awt.Color;
 import java.awt.Container;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
-import java.awt.event.KeyAdapter;
-import java.awt.event.MouseAdapter;
 
 public class Level1 extends Level {
 
@@ -18,6 +17,8 @@ public class Level1 extends Level {
 		Graphics2D g2d = scaler.scale(g);
 		g2d.setColor(Pallete.greyBrown);
 		g2d.fill(scaler.drawSize());
+		g2d.setColor(Color.blue);
+		g2d.fillRect(400,420,300,100);
 		plr.draw(g2d);
 	}
 	public void play() {

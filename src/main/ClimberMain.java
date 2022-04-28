@@ -9,7 +9,7 @@ import javax.swing.JFrame;
 public class ClimberMain extends JFrame {
 	private static final long serialVersionUID = 1L;
 	protected static final String dir = System.getProperty("user.dir");
-	protected static final int fRate = 24;
+	protected static final int fRate = 30;
 	public ClimberMain(String s) {
 		super(s);
 

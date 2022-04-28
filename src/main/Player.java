@@ -8,6 +8,7 @@ import java.awt.geom.AffineTransform;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
+import java.util.Arrays;
 
 import javax.imageio.ImageIO;
 
@@ -21,7 +22,7 @@ public class Player implements Drawable {
 	protected double xVel = 0, yVel = 0;
 	protected int x, y, inpDir = 0;
 	protected double acc = 4; 
-	protected double dAcc = .3;
+	protected double dAcc = .1;
 	protected Rectangle bounds;
 	
 
@@ -44,10 +45,9 @@ public class Player implements Drawable {
 
 	public void updatePhysics() {
 		xVel += acc*inpDir;
-//		xVel += xVel>=dAcc?-dAcc:(xVel<=-dAcc?dAcc:-xVel);
-//		xVel = Math.max(-maxVel,Math.min(xVel, maxVel));
 		xVel = (int)(xVel*(1-dAcc));
 		x += xVel;
+		
 	}
 
 	@Override
@@ -55,24 +55,22 @@ public class Player implements Drawable {
 		AffineTransform prev = g2d.getTransform();
 		AffineTransform genTrans = (AffineTransform) prev.clone();
 		genTrans.translate(x, y);
+		genTrans.rotate((xVel)/120.0);
 		g2d.setTransform(genTrans);
 		
 		g2d.setColor(Color.red);
 		g2d.draw(bounds);
 		g2d.drawImage(body, null, -25, -98);
 
-		g2d.rotate(x/50);
+		g2d.rotate(x/38.0);
 		g2d.drawImage(wheel, null, -18, -18);
 		g2d.fillOval(-18, -1, 3, 3);
 		
 		g2d.setTransform(genTrans);
 		g2d.translate(laPiv.x, laPiv.y);
 		g2d.drawImage(lArm, null, -31,-42);
-		g2d.setTransform(genTrans);
-
-		g2d.translate(raPiv.x, raPiv.y);
+		g2d.translate(raPiv.x-laPiv.x, raPiv.y-laPiv.y);
 		g2d.drawImage(rArm, null, -2,-42);
-//		g2d.fillOval(-1, -1, 2, 2);
 		g2d.setTransform(prev);
 	}
 

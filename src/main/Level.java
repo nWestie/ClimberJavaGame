@@ -34,36 +34,46 @@ public class Level extends JPanel {
 	}
 
 	private class KeyEvents extends KeyAdapter {
+		private int l =0, r = 0;
 		public void keyPressed(KeyEvent e) {
 			switch (e.getKeyCode()) {
 			case KeyEvent.VK_RIGHT:
-				plr.inpDir = 1;
+			case KeyEvent.VK_D:
+				r = 1;
 				break;
 			case KeyEvent.VK_LEFT:
-				plr.inpDir = -1;
+			case KeyEvent.VK_A:
+				l = 1;
 				break;
 			case KeyEvent.VK_UP:
 				break;
 			case KeyEvent.VK_ESCAPE:
 				System.exit(0);
 			}
+			plr.inpDir = r-l;
 		}
 
 		public void keyReleased(KeyEvent e) {
 			switch (e.getKeyCode()) {
 			case KeyEvent.VK_RIGHT:
+			case KeyEvent.VK_D:
+				r = 0;
+				break;
 			case KeyEvent.VK_LEFT:
-				plr.inpDir = 0;
+			case KeyEvent.VK_A:
+				l = 0;
+				break;
 			default:
 				break;
 			}
+			plr.inpDir = r-l;
 		}
 	}
 
 	private class MouseEvents extends MouseAdapter {
 		@Override
 		public void mouseMoved(MouseEvent e) {
-			
+
 		}
 
 		@Override
