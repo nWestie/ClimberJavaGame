@@ -1,12 +1,12 @@
 package main;
 
-import java.awt.Color;
 import java.awt.Container;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
+import java.awt.event.KeyAdapter;
+import java.awt.event.MouseAdapter;
 
 public class Level1 extends Level {
-	protected Player plr;
 
 	public Level1(Container cont) {
 		super(cont);
@@ -21,9 +21,10 @@ public class Level1 extends Level {
 		plr.draw(g2d);
 	}
 	public void play() {
+		super.play();
 		long nextLoopTime;
 		while(true) {
-			nextLoopTime = System.currentTimeMillis()+1000/24;
+			nextLoopTime = System.currentTimeMillis()+1000/ClimberMain.fRate;
 			plr.updatePhysics();
 			repaint();
 			while(System.currentTimeMillis()<nextLoopTime);

@@ -15,21 +15,22 @@ import objs.Drawable;
 
 public class Player implements Drawable {
 	protected BufferedImage body, wheel, lArm, rArm;
-	protected AffineTransform wTrans, bTrans, laTrans, raTrans;
-
+	protected AffineTransform wTrans, bTrans;
+	protected Point laPiv, raPiv;
 	protected double rot = 0;
-	protected int x, y;
+	protected double xVel = 0, yVel = 0;
+	protected int x, y, inpDir = 0;
+	protected double acc = 4; 
+	protected double dAcc = .3;
 	protected Rectangle bounds;
+	
 
 	public Player(int x, int y) {
 		this.x = x;
 		this.y = y;
-		bounds = new Rectangle(-25, -100, 50, 115);
-		wTrans = new AffineTransform();
-		bTrans = new AffineTransform();
-		laTrans = new AffineTransform();
-		raTrans = new AffineTransform();
-
+		bounds = new Rectangle(-25, -100, 50, 116);
+		laPiv = new Point(-14, -56);
+		raPiv = new Point(14, -56);
 		try {
 			body = ImageIO.read(new File(ClimberMain.dir, "/Imgs/Player/Body.png"));
 			wheel = ImageIO.read(new File(ClimberMain.dir, "/Imgs/Player/Wheel.png"));
@@ -42,8 +43,11 @@ public class Player implements Drawable {
 	}
 
 	public void updatePhysics() {
-		bTrans.rotate(Math.PI / 36);
-		wTrans.rotate(-Math.PI / 36);
+		xVel += acc*inpDir;
+//		xVel += xVel>=dAcc?-dAcc:(xVel<=-dAcc?dAcc:-xVel);
+//		xVel = Math.max(-maxVel,Math.min(xVel, maxVel));
+		xVel = (int)(xVel*(1-dAcc));
+		x += xVel;
 	}
 
 	@Override
@@ -52,18 +56,24 @@ public class Player implements Drawable {
 		AffineTransform genTrans = (AffineTransform) prev.clone();
 		genTrans.translate(x, y);
 		g2d.setTransform(genTrans);
+		
 		g2d.setColor(Color.red);
 		g2d.draw(bounds);
-		g2d.drawOval(-5, -5, 10, 10);
-
-		g2d.transform(bTrans);
 		g2d.drawImage(body, null, -25, -98);
-		g2d.setTransform(genTrans);
-		g2d.transform(wTrans);
-		g2d.drawImage(wheel, null, -12, -12);
-		g2d.setTransform(prev);
 
-//		g2d.drawImage(lArm, null, x - 29, y - 2);
+		g2d.rotate(x/50);
+		g2d.drawImage(wheel, null, -18, -18);
+		g2d.fillOval(-18, -1, 3, 3);
+		
+		g2d.setTransform(genTrans);
+		g2d.translate(laPiv.x, laPiv.y);
+		g2d.drawImage(lArm, null, -31,-42);
+		g2d.setTransform(genTrans);
+
+		g2d.translate(raPiv.x, raPiv.y);
+		g2d.drawImage(rArm, null, -2,-42);
+//		g2d.fillOval(-1, -1, 2, 2);
+		g2d.setTransform(prev);
 	}
 
 }
