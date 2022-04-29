@@ -43,6 +43,7 @@ public class Level extends JPanel {
 				break;
 			case KeyEvent.VK_LEFT:
 			case KeyEvent.VK_A:
+				
 				l = 1;
 				break;
 			case KeyEvent.VK_UP:
