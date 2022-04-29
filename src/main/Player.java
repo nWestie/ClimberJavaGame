@@ -59,12 +59,12 @@ public class Player implements Drawable {
 		g2d.setTransform(genTrans);
 		
 		g2d.setColor(Color.red);
-		g2d.draw(bounds);
+//		g2d.draw(bounds);
 		g2d.drawImage(body, null, -25, -98);
 
 		g2d.rotate(x/38.0);
 		g2d.drawImage(wheel, null, -18, -18);
-		g2d.fillOval(-18, -1, 3, 3);
+//		g2d.fillOval(-18, -1, 3, 3);
 		
 		g2d.setTransform(genTrans);
 		g2d.translate(laPiv.x, laPiv.y);
