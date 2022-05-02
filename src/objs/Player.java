@@ -1,4 +1,4 @@
-package main;
+package objs;
 
 import java.awt.Color;
 import java.awt.Graphics2D;
@@ -8,11 +8,10 @@ import java.awt.geom.AffineTransform;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
-import java.util.Arrays;
 
 import javax.imageio.ImageIO;
 
-import objs.Drawable;
+import main.ClimberMain;
 
 public class Player implements Drawable {
 	protected BufferedImage body, wheel, lArm, rArm;
@@ -20,7 +19,8 @@ public class Player implements Drawable {
 	protected Point laPiv, raPiv;
 	protected double rot = 0;
 	protected double xVel = 0, yVel = 0;
-	protected int x, y, inpDir = 0;
+	protected int x, y;
+	public int inpDir = 0;
 	protected double acc = 4; 
 	protected double dAcc = .1;
 	protected Rectangle bounds;

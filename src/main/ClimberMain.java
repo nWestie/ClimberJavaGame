@@ -8,7 +8,7 @@ import javax.swing.JFrame;
 
 public class ClimberMain extends JFrame {
 	private static final long serialVersionUID = 1L;
-	protected static final String dir = System.getProperty("user.dir");
+	public static final String dir = System.getProperty("user.dir");
 	protected static final int fRate = 30;
 	public ClimberMain(String s) {
 		super(s);
@@ -32,7 +32,7 @@ public class ClimberMain extends JFrame {
 //			cont.add(menu);
 //			int levelNum = menu.waitForSelection();
 //			cont.remove(menu);
-			Level l1 = new Level1(frame);
+			Level l1 = new LevelBuilder(frame);
 			cont.add(l1);
 			frame.repaint();
 			l1.play();

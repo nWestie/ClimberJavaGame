@@ -1,50 +1,51 @@
 package objs;
 
-import java.awt.Dimension;
-import java.awt.Graphics2D;
-import java.awt.Point;
 import java.awt.Rectangle;
+import java.awt.geom.Area;
+import java.awt.image.BufferedImage;
+import java.io.File;
 
-public class Block extends Rectangle implements Drawable {
+import javax.imageio.ImageIO;
 
-	public Block() {
-		// TODO Auto-generated constructor stub
+import main.ClimberMain;
+/**
+ * Defines the image and collision box for each block type
+ * @author 210731
+ *
+ */
+public class Block {
+	private final BufferedImage img;
+	private final Area bounds;
+	private static Block[] blocks; 
+	public Block(BufferedImage img, Area bounds) {
+		this.img = img;
+		this.bounds = bounds;
 	}
-
-	public Block(Rectangle arg0) {
-		super(arg0);
-		// TODO Auto-generated constructor stub
+	private static void genBlocks() {
+		blocks = new Block[24];
+		try {
+			BufferedImage master = ImageIO.read(new File(ClimberMain.dir, "/Imgs/Blocks.png"));
+			Area def = new Area(new Rectangle(0,0,151,111));
+			for (int i = 0; i < 4; i++) {
+				for (int j = 0; j < 6; j++) {
+					blocks[i*j] = new Block(master.getSubimage(i*153,j*112,151,111),def);
+				}
+			}
+			
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
 	}
-
-	public Block(Point arg0) {
-		super(arg0);
-		// TODO Auto-generated constructor stub
+	public static Block[] getBlockList() {
+		if(blocks == null) genBlocks();
+		return blocks;
 	}
-
-	public Block(Dimension arg0) {
-		super(arg0);
-		// TODO Auto-generated constructor stub
+	public BufferedImage getImg() {
+		return img;
 	}
-
-	public Block(int arg0, int arg1) {
-		super(arg0, arg1);
-		// TODO Auto-generated constructor stub
+	public Area getBounds() {
+		return bounds;
 	}
-
-	public Block(Point arg0, Dimension arg1) {
-		super(arg0, arg1);
-		// TODO Auto-generated constructor stub
-	}
-
-	public Block(int arg0, int arg1, int arg2, int arg3) {
-		super(arg0, arg1, arg2, arg3);
-		// TODO Auto-generated constructor stub
-	}
-
-	@Override
-	public void draw(Graphics2D g2d) {
-		// TODO Auto-generated method stub
-
-	}
-
 }

@@ -10,10 +10,15 @@ import java.awt.event.MouseEvent;
 
 import javax.swing.JPanel;
 
+import objs.Player;
+
 public class Level extends JPanel {
 	private static final long serialVersionUID = 1L;
 	protected FScale scaler;
 	protected Player plr;
+
+	public Level() {
+	}
 
 	public Level(Container cont) {
 		scaler = new FScale(cont, this, 1920, 1080);
@@ -33,8 +38,9 @@ public class Level extends JPanel {
 		requestFocusInWindow();
 	}
 
-	private class KeyEvents extends KeyAdapter {
-		private int l =0, r = 0;
+	protected class KeyEvents extends KeyAdapter {
+		private int l = 0, r = 0;
+
 		public void keyPressed(KeyEvent e) {
 			switch (e.getKeyCode()) {
 			case KeyEvent.VK_RIGHT:
@@ -43,7 +49,7 @@ public class Level extends JPanel {
 				break;
 			case KeyEvent.VK_LEFT:
 			case KeyEvent.VK_A:
-				
+
 				l = 1;
 				break;
 			case KeyEvent.VK_UP:
@@ -51,7 +57,7 @@ public class Level extends JPanel {
 			case KeyEvent.VK_ESCAPE:
 				System.exit(0);
 			}
-			plr.inpDir = r-l;
+			plr.inpDir = r - l;
 		}
 
 		public void keyReleased(KeyEvent e) {
@@ -67,7 +73,7 @@ public class Level extends JPanel {
 			default:
 				break;
 			}
-			plr.inpDir = r-l;
+			plr.inpDir = r - l;
 		}
 	}
 
