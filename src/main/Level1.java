@@ -6,7 +6,7 @@ import java.awt.Graphics;
 import java.awt.Graphics2D;
 
 public class Level1 extends Level {
-
+	BlockType[][] board = new BlockType
 	public Level1(Container cont) {
 		super(cont);
 		plr = new Player(300,400);
