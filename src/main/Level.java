@@ -10,23 +10,36 @@ import java.awt.event.MouseEvent;
 
 import javax.swing.JPanel;
 
+import objs.Block;
 import objs.Player;
 
 public class Level extends JPanel {
 	private static final long serialVersionUID = 1L;
 	protected FScale scaler;
 	protected Player plr;
+	Block[][] board = new Block[50][100];
+	Block[] blocks;
 
-	public Level() {
-	}
-
-	public Level(Container cont) {
+	public Level(Container cont, boolean noMouse) {
 		scaler = new FScale(cont, this, 1920, 1080);
-		addKeyListener(new KeyEvents());
+		addKeyListener(new Level.KeyEvents());
 		setFocusable(true);
-		MouseEvents mouse = new MouseEvents();
-		addMouseListener(mouse);
-		addMouseMotionListener(mouse);
+		if(!noMouse) {
+			MouseAdapter mouse = new MouseEvents();
+			addMouseListener(mouse);
+			addMouseMotionListener(mouse);		
+		}
+		plr = new Player(300,400);
+		blocks = Block.getBlockList();
+		for (int i = 0; i < board.length; i++) {
+			for (int j = 0; j < board[i].length; j++) {
+				board[i][j] = blocks[(i*board.length+j)%blocks.length];
+			}
+			
+		}
+	}
+	public Level(Container cont) {
+		this(cont, false);
 	}
 
 	@Override

@@ -18,20 +18,8 @@ public class LevelBuilder extends Level {
 	Block[] blocks;
 	protected Point cursor = new Point(0,0);
 	public LevelBuilder(Container cont) {
-		scaler = new FScale(cont, this, 1920, 1080);
-		addKeyListener(new Level.KeyEvents());
-		setFocusable(true);
-		LvlMouseEvents mouse = new LvlMouseEvents();
-		addMouseListener(mouse);
-		addMouseMotionListener(mouse);		
-		plr = new Player(300,400);
-		blocks = Block.getBlockList();
-		for (int i = 0; i < board.length; i++) {
-			for (int j = 0; j < board[i].length; j++) {
-				board[i][j] = blocks[(i*board.length+j)%blocks.length];
-			}
-			
-		}
+		super(cont, true);
+		MouseAdapter m = new LvlMouseEvents();
 	}
 
 	@Override
@@ -41,8 +29,9 @@ public class LevelBuilder extends Level {
 		Rectangle bounds = scaler.drawSize();
 		int w = 151, h = 111;	
 		Rectangle wideBounds  = new Rectangle(0,0,0,0);
-		wideBounds.x = bounds.x/w*w;
-		wideBounds.y = bounds.y/h*h;
+		wideBounds.x = bounds.x/w;
+		wideBounds.y = bounds.y/h;
+		wideBounds.width = bounds.width+bounds.x;
 		
 		for(int i = bounds.x; i < scaler.drawSize().getWidth(); i += w*2) {
 			for(int j = 0; j < scaler.drawSize().getHeight(); j += h*2) {
