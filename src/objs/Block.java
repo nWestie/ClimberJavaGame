@@ -23,12 +23,13 @@ public class Block {
 	}
 	private static void genBlocks() {
 		blocks = new Block[24];
+		Block[] b = blocks;
 		try {
 			BufferedImage master = ImageIO.read(new File(ClimberMain.dir, "/Imgs/Blocks.png"));
 			Area def = new Area(new Rectangle(0,0,151,111));
 			for (int i = 0; i < 4; i++) {
 				for (int j = 0; j < 6; j++) {
-					blocks[i*j] = new Block(master.getSubimage(i*153,j*112,151,111),def);
+					blocks[i*6+j] = new Block(master.getSubimage(i*153,j*112,151,111),def);
 				}
 			}
 			

@@ -17,14 +17,14 @@ public class Level extends JPanel {
 	private static final long serialVersionUID = 1L;
 	protected FScale scaler;
 	protected Player plr;
-	Block[][] board = new Block[50][100];
-	Block[] blocks;
+	int[][] board = new int[50][100];
+	protected static Block[] blocks;
 
-	public Level(Container cont, boolean noMouse) {
+	public Level(Container cont, boolean noListen) {
 		scaler = new FScale(cont, this, 1920, 1080);
-		addKeyListener(new Level.KeyEvents());
-		setFocusable(true);
-		if(!noMouse) {
+		if(!noListen) {
+			addKeyListener(new Level.KeyEvents());
+			setFocusable(true);
 			MouseAdapter mouse = new MouseEvents();
 			addMouseListener(mouse);
 			addMouseMotionListener(mouse);		
@@ -33,7 +33,7 @@ public class Level extends JPanel {
 		blocks = Block.getBlockList();
 		for (int i = 0; i < board.length; i++) {
 			for (int j = 0; j < board[i].length; j++) {
-				board[i][j] = blocks[(i*board.length+j)%blocks.length];
+				board[i][j] = 21;
 			}
 			
 		}
