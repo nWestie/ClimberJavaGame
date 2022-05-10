@@ -14,19 +14,22 @@ import java.awt.event.MouseWheelEvent;
 import java.io.FileOutputStream;
 import java.io.ObjectOutputStream;
 
-import objs.Block;
-
 public class LevelBuilder extends Level {
-//	Block[][] board = new Block[50][100];
-//	Block[] blocks;
+	private static final long serialVersionUID = 1L;
 	protected WriteEnv envWriter;
-	protected Point cursor = new Point(0, 0);
-	protected int x = 0, y = 0;
-	protected int spd = 30;
-	protected int w = 151, h = 111;
+	protected Point cursor;
+	protected int x, y;
+	protected int spd;
+	protected int w, h;
 
 	public LevelBuilder(Container cont) {
 		super(cont, true);
+		x = 0;
+		y = 0;
+		spd = 30;
+		w = 151;
+		h = 111;
+		cursor = new Point(0, 0);
 		MouseAdapter m = new LvlMouseEvents();
 		addMouseListener(m);
 		addMouseMotionListener(m);
@@ -35,7 +38,6 @@ public class LevelBuilder extends Level {
 		setFocusable(true);
 		envWriter = new WriteEnv();
 		envWriter.start();
-		Block[] b = blocks;
 	}
 
 	@Override
@@ -71,7 +73,7 @@ public class LevelBuilder extends Level {
 	}
 
 	public void play() {
-		
+
 		super.play();
 		long nextLoopTime;
 		while (true) {
@@ -158,21 +160,25 @@ public class LevelBuilder extends Level {
 		}
 
 	}
-	private class WriteEnv extends Thread{
+
+	private class WriteEnv extends Thread {
 		protected volatile boolean update;
+
 		@Override
 		public void run() {
-			System.out.println("Started envWirte");
-			while(!ClimberMain.exitFlag) {
-				while(!update);
+//			System.out.println("Started envWirte");
+			while (!ClimberMain.exitFlag) {
+				while (!update)
+					;
 				update = false;
-//				System.out.println("Start save");
-				try (ObjectOutputStream outStream = new ObjectOutputStream(new FileOutputStream(lvlEnvFile));){
-					outStream.writeObject(board);			
+				try {
+					ObjectOutputStream outStream = new ObjectOutputStream(new FileOutputStream(lvlEnvFile));
+					outStream.writeObject(board);
+					outStream.close();
 				} catch (Exception e) {
 					e.printStackTrace();
 				}
-//				System.out.println("Saved");
+				System.out.println("Saved");
 			}
 		}
 	}

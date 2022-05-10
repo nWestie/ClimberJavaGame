@@ -21,7 +21,7 @@ public class Level extends JPanel {
 	protected FScale scaler;
 	protected File lvlEnvFile;
 	protected Player plr;
-	int[][] board = new int[20][40];
+	protected int[][] board = new int[20][40];
 	protected static Block[] blocks;
 
 	public Level(Container cont, boolean noListen) {
@@ -36,21 +36,16 @@ public class Level extends JPanel {
 		plr = new Player(300, 400);
 		blocks = Block.getBlockList();
 		lvlEnvFile = new File(ClimberMain.dir, "/Lvls/LvlTest.clvl");
-		try (ObjectInputStream inStream = new ObjectInputStream(new FileInputStream(lvlEnvFile));) {
-			Object tmpRead = inStream.readObject();
-			if (!(tmpRead instanceof int[][])) {
-				throw new IOException("Invalid level file");
-			}
-			board = (int[][]) tmpRead;
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-		for (int i = 0; i < board.length; i++) {
-			for (int j = 0; j < board[i].length; j++) {
-				board[i][j] = 22;
-			}
-
-		}
+//		try (ObjectInputStream inStream = new ObjectInputStream(new FileInputStream(lvlEnvFile));) {
+//			Object tmpRead = inStream.readObject();
+//			if (!(tmpRead instanceof int[][])) {
+//				throw new IOException("Invalid level file");
+//			}
+//			board = (int[][]) tmpRead;
+//			System.out.println("Board loaded");
+//		} catch (Exception e) {
+//			e.printStackTrace();
+//		}
 	}
 
 	public Level(Container cont) {
