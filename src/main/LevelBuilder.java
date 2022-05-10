@@ -11,13 +11,15 @@ import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseWheelEvent;
+import java.io.FileOutputStream;
+import java.io.ObjectOutputStream;
 
 import objs.Block;
-import objs.Player;
 
 public class LevelBuilder extends Level {
 //	Block[][] board = new Block[50][100];
 //	Block[] blocks;
+	protected WriteEnv envWriter;
 	protected Point cursor = new Point(0, 0);
 	protected int x = 0, y = 0;
 	protected int spd = 30;
@@ -28,48 +30,56 @@ public class LevelBuilder extends Level {
 		MouseAdapter m = new LvlMouseEvents();
 		addMouseListener(m);
 		addMouseMotionListener(m);
+		addMouseWheelListener(m);
 		addKeyListener(new LvlKeyEvents());
 		setFocusable(true);
+		envWriter = new WriteEnv();
+		envWriter.start();
 		Block[] b = blocks;
 	}
 
 	@Override
 	public void paintComponent(Graphics g) {
-//		x = Math.max(0,Math.min(x, (board[0].length-14)*w));
-//		y = Math.max(0,Math.min(y, (board[0].length-11)*h));
-		
-		Graphics2D g2d = scaler.scale(g);
-		g2d.translate(-x,-y);
-		g2d.setColor(Pallete.greyBrown);
+		super.paintComponent(g);
+
 		Rectangle bounds = scaler.drawSize();
+		x = Math.max(0, Math.min(x, (board[0].length) * w - bounds.width));
+		y = Math.max(0, Math.min(y, (board.length) * h - bounds.height));
+
+		Graphics2D g2d = scaler.scale(g);
+		g2d.translate(-x, -y);
+		g2d.setColor(Color.red);
 		Rectangle bBounds = new Rectangle(0, 0, 0, 0); // bounds in units of BG tiles
-		bBounds.x = (x+bounds.x) / w;
-		bBounds.y = (y+bounds.y) / h;
-		bBounds.width = (x+bounds.width + bounds.x) / w + 1;
-		bBounds.height = (y+bounds.height + bounds.y) / h + 1;
+		bBounds.x = (x + bounds.x) / w;
+		bBounds.y = (y + bounds.y) / h;
+		bBounds.width = (x + bounds.width + bounds.x) / w + 1;
+		bBounds.height = (y + bounds.height + bounds.y) / h + 1;
 		try {
 			for (int i = bBounds.y; i < bBounds.height; i++) {
 				for (int j = bBounds.x; j < bBounds.width; j++) {
 					g2d.drawImage(blocks[board[i][j]].getImg(), null, j * w, i * h);
 				}
 
-			} 
+			}
 		} catch (Exception e) {
 			System.out.println("BG Bounds err");
 		}
-		g2d.translate(x,y);
+		g2d.drawRect(cursor.x * w, cursor.y * h, w, h);
+		g2d.translate(x, y);
 		plr.draw(g2d);
-		g2d.drawString(String.format("%d, %d", bBounds.width,bBounds.height), 20, 20);
+		g2d.drawString(String.format("%d, %d", cursor.x, cursor.y), 20, 20);
 	}
 
 	public void play() {
+		
 		super.play();
 		long nextLoopTime;
 		while (true) {
 			nextLoopTime = System.currentTimeMillis() + 1000 / ClimberMain.fRate;
 			plr.updatePhysics();
 			repaint();
-			while (System.currentTimeMillis() < nextLoopTime);
+			while (System.currentTimeMillis() < nextLoopTime)
+				;
 		}
 	}
 
@@ -98,8 +108,8 @@ public class LevelBuilder extends Level {
 			case KeyEvent.VK_ESCAPE:
 				System.exit(0);
 			}
-			x += spd*(r-l);
-			y += spd*(d-u);
+			x += spd * (r - l);
+			y += spd * (d - u);
 		}
 
 		public void keyReleased(KeyEvent e) {
@@ -130,8 +140,9 @@ public class LevelBuilder extends Level {
 	private class LvlMouseEvents extends MouseAdapter {
 		@Override
 		public void mouseMoved(MouseEvent e) {
-			cursor.x = e.getX();
-			cursor.y = e.getY();
+			double s = scaler.getScale();
+			cursor.x = (int) (x + (e.getX() / s)) / w;
+			cursor.y = (int) (y + (e.getY() / s)) / h;
 		}
 
 		@Override
@@ -141,11 +152,28 @@ public class LevelBuilder extends Level {
 
 		@Override
 		public void mouseWheelMoved(MouseWheelEvent e) {
-			int i,j;
-			i = (x+cursor.x)/w;
-			j = (y+cursor.y)/h;
-			board[j][i] = (board[j][i]+e.getWheelRotation());
+			int i = cursor.x, j = cursor.y;
+			board[j][i] = (board[j][i] + e.getWheelRotation() + blocks.length) % blocks.length;
+			envWriter.update = true;
 		}
 
+	}
+	private class WriteEnv extends Thread{
+		protected volatile boolean update;
+		@Override
+		public void run() {
+			System.out.println("Started envWirte");
+			while(!ClimberMain.exitFlag) {
+				while(!update);
+				update = false;
+//				System.out.println("Start save");
+				try (ObjectOutputStream outStream = new ObjectOutputStream(new FileOutputStream(lvlEnvFile));){
+					outStream.writeObject(board);			
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
+//				System.out.println("Saved");
+			}
+		}
 	}
 }

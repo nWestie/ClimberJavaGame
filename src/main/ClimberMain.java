@@ -10,6 +10,7 @@ public class ClimberMain extends JFrame {
 	private static final long serialVersionUID = 1L;
 	public static final String dir = System.getProperty("user.dir");
 	protected static final int fRate = 30;
+	protected static  boolean exitFlag = false;
 	public ClimberMain(String s) {
 		super(s);
 
