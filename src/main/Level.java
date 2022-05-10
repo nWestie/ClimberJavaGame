@@ -36,16 +36,16 @@ public class Level extends JPanel {
 		plr = new Player(300, 400);
 		blocks = Block.getBlockList();
 		lvlEnvFile = new File(ClimberMain.dir, "/Lvls/LvlTest.clvl");
-//		try (ObjectInputStream inStream = new ObjectInputStream(new FileInputStream(lvlEnvFile));) {
-//			Object tmpRead = inStream.readObject();
-//			if (!(tmpRead instanceof int[][])) {
-//				throw new IOException("Invalid level file");
-//			}
-//			board = (int[][]) tmpRead;
-//			System.out.println("Board loaded");
-//		} catch (Exception e) {
-//			e.printStackTrace();
-//		}
+		try (ObjectInputStream inStream = new ObjectInputStream(new FileInputStream(lvlEnvFile));) {
+			Object tmpRead = inStream.readObject();
+			if (!(tmpRead instanceof int[][])) {
+				throw new IOException("Invalid level file");
+			}
+			board = (int[][]) tmpRead;
+			System.out.println("Board loaded");
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
 	}
 
 	public Level(Container cont) {

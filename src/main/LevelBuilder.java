@@ -45,8 +45,8 @@ public class LevelBuilder extends Level {
 		super.paintComponent(g);
 
 		Rectangle bounds = scaler.drawSize();
-		x = Math.max(0, Math.min(x, (board[0].length) * w - bounds.width));
-		y = Math.max(0, Math.min(y, (board.length) * h - bounds.height));
+		x = Math.max(0, Math.min(x, (board[0].length) * w - bounds.width - 1));
+		y = Math.max(0, Math.min(y, (board.length) * h - bounds.height - 1));
 
 		Graphics2D g2d = scaler.scale(g);
 		g2d.translate(-x, -y);
@@ -107,6 +107,8 @@ public class LevelBuilder extends Level {
 			case KeyEvent.VK_W:
 				u = 1;
 				break;
+			case KeyEvent.VK_F:
+				envWriter.update();
 			case KeyEvent.VK_ESCAPE:
 				System.exit(0);
 			}
@@ -149,20 +151,19 @@ public class LevelBuilder extends Level {
 
 		@Override
 		public void mouseClicked(MouseEvent e) {
-
+			envWriter.update();
 		}
 
 		@Override
 		public void mouseWheelMoved(MouseWheelEvent e) {
 			int i = cursor.x, j = cursor.y;
 			board[j][i] = (board[j][i] + e.getWheelRotation() + blocks.length) % blocks.length;
-			envWriter.update = true;
 		}
 
 	}
 
 	private class WriteEnv extends Thread {
-		protected volatile boolean update;
+		private volatile boolean update;
 
 		@Override
 		public void run() {
@@ -180,6 +181,10 @@ public class LevelBuilder extends Level {
 				}
 				System.out.println("Saved");
 			}
+		}
+
+		public void update() {
+			update = true;
 		}
 	}
 }
