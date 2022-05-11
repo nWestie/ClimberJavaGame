@@ -25,7 +25,7 @@ public class LevelBuilder extends Level {
 	protected int w, h;
 
 	public LevelBuilder(Container cont) {
-		super(cont, "/Lvls/Lvl1.clvl", true);
+		super(cont, "/Lvls/Lvl1.clvl", 3, 18, true);
 		x = 0;
 		y = 0;
 		spd = 30;

@@ -26,11 +26,12 @@ public class Level extends JPanel {
 	protected FScale scaler;
 	protected File lvlEnvFile;
 	protected Player plr;
-	protected int xScroll, yScroll;
 	protected int[][] board = new int[20][40];
 	protected static Block[] blocks;
+	protected int blockW = 151, blockH = 111;
+	protected int xScroll, yScroll = 10 * blockH;
 
-	public Level(Container cont, String lvlFile, boolean noListen) {
+	public Level(Container cont, String lvlFile, int plrX, int plrY, boolean noListen) {
 		scaler = new FScale(cont, this, 1920, 1080);
 		if (!noListen) {
 			addKeyListener(new Level.KeyEvents());
@@ -39,7 +40,7 @@ public class Level extends JPanel {
 			addMouseListener(mouse);
 			addMouseMotionListener(mouse);
 		}
-		plr = new Player(300, 400);
+		plr = new Player(plrX * blockW, plrY * blockH - 19);
 		blocks = Block.getBlockList();
 		lvlEnvFile = new File(ClimberMain.dir, lvlFile);
 		try (ObjectInputStream inStream = new ObjectInputStream(new FileInputStream(lvlEnvFile));) {
@@ -54,52 +55,56 @@ public class Level extends JPanel {
 		}
 	}
 
-	public Level(Container cont, String lvlFile) {
-		this(cont, lvlFile, false);
+	public Level(Container cont, int lvlFile, int plrX, int plrY) {
+		this(cont, String.format("/Lvls/Lvl%d.clvl", lvlFile), plrX, plrY, false);
 	}
 
 	@Override
 	public void paintComponent(Graphics g) {
 		super.paintComponent(g);
-		int w = 151, h = 111;
+
 		Graphics2D g2d = scaler.scale(g);
 		g2d.translate(-xScroll, -yScroll);
-		
-		Rectangle bounds = scaler.drawSize();
-		
-		//clamp scrolling to board size
-		xScroll = Math.max(0, Math.min(xScroll, (board[0].length) * w - bounds.width - 1));
-		yScroll = Math.max(0, Math.min(yScroll, (board.length) * h - bounds.height - 1));
 
-		//draw background tiles
+		Rectangle bounds = scaler.drawSize();
+
+		// clamp scrolling to board size
+		xScroll = Math.max(0, Math.min(xScroll, (board[0].length) * blockW - bounds.width - 1));
+		yScroll = Math.max(0, Math.min(yScroll, (board.length) * blockH - bounds.height - 1));
+
+		// draw background tiles
 		Rectangle bBounds = new Rectangle(0, 0, 0, 0); // bounds in units of BG tiles
-		bBounds.x = (xScroll + bounds.x) / w;
-		bBounds.y = (yScroll + bounds.y) / h;
-		bBounds.width = (xScroll + bounds.width + bounds.x) / w + 1;
-		bBounds.height = (yScroll + bounds.height + bounds.y) / h + 1;
+		bBounds.x = (xScroll + bounds.x) / blockW;
+		bBounds.y = (yScroll + bounds.y) / blockH;
+		bBounds.width = (xScroll + bounds.width + bounds.x) / blockW + 1;
+		bBounds.height = (yScroll + bounds.height + bounds.y) / blockH + 1;
 		for (int i = bBounds.y; i < bBounds.height; i++) {
 			for (int j = bBounds.x; j < bBounds.width; j++) {
-				g2d.drawImage(blocks[board[i][j]].getImg(), null, j * w, i * h);
+				g2d.drawImage(blocks[board[i][j]].getImg(), null, j * blockW, i * blockH);
 			}
 
 		}
+		
 
-		Area tmp = blocks[board[cursor.y][cursor.x]].getBounds();
-		AffineTransform tempTrans = new AffineTransform();
-		tempTrans.setToTranslation(cursor.x * w, cursor.y * h);
-		tmp = tmp.createTransformedArea(tempTrans);
-		g2d.draw(tmp);
+//		Area tmp = blocks[board[cursor.y][cursor.x]].getBounds();
+//		AffineTransform tempTrans = new AffineTransform();
+//		tempTrans.setToTranslation(cursor.x * w, cursor.y * h);
+//		tmp = tmp.createTransformedArea(tempTrans);
+//		g2d.draw(tmp);
 
 		plr.draw(g2d);
 	}
+
 	/**
 	 * allows calling only grandparent(jPanel) paintComponent
+	 * 
 	 * @param g
 	 * @param pass
 	 */
 	public void paintComponent(Graphics g, boolean pass) {
-		super.paintComponent(g);		
+		super.paintComponent(g);
 	}
+
 	public void play() {
 		requestFocusInWindow();
 		long nextLoopTime;
@@ -114,6 +119,7 @@ public class Level extends JPanel {
 
 	protected class KeyEvents extends KeyAdapter {
 		private int l = 0, r = 0;
+		private int u = 0, d = 0;
 
 		public void keyPressed(KeyEvent e) {
 			switch (e.getKeyCode()) {
@@ -126,12 +132,19 @@ public class Level extends JPanel {
 
 				l = 1;
 				break;
+			case KeyEvent.VK_DOWN:
+			case KeyEvent.VK_S:
+				d = 1;
+				break;
 			case KeyEvent.VK_UP:
+			case KeyEvent.VK_W:
+				u = 1;
 				break;
 			case KeyEvent.VK_ESCAPE:
 				System.exit(0);
 			}
 			plr.inpDir = r - l;
+			plr.setyVel(d-u);
 		}
 
 		public void keyReleased(KeyEvent e) {
@@ -144,10 +157,19 @@ public class Level extends JPanel {
 			case KeyEvent.VK_A:
 				l = 0;
 				break;
+			case KeyEvent.VK_DOWN:
+			case KeyEvent.VK_S:
+				d = 0;
+				break;
+			case KeyEvent.VK_UP:
+			case KeyEvent.VK_W:
+				u = 0;
+				break;
 			default:
 				break;
 			}
 			plr.inpDir = r - l;
+			plr.setyVel(d-u);
 		}
 	}
 

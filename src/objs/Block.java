@@ -25,7 +25,7 @@ public class Block {
 		this.img = img;
 		this.bounds = bounds;
 	}
-
+	
 	private static void genBlocks() {
 		blocks = new Block[24];
 		Block[] b = blocks;
@@ -45,10 +45,9 @@ public class Block {
 		}
 
 	}
-
+	
 	private static Area[] genAreas() {
 		Area[] a = new Area[blocks.length];
-		int[] b = { 1, 2, 3 };
 		a[0] = new Area(new Polygon(new int[] { 1, 149, 99, 1 }, new int[] { 0, 0, 110, 110 }, 4));
 		a[1] = new Area(new Polygon(new int[] { 1, 100, 50, 1 }, new int[] { 0, 0, 110, 110 }, 4));
 		a[2] = new Area(new Polygon(new int[] { 1, 51, 1 }, new int[] { 0, 0, 110 }, 3));
@@ -73,9 +72,6 @@ public class Block {
 		a[21] = new Area(new Polygon(new int[] { 149, 149, 1 }, new int[] { 0, 110, 110 }, 3));
 		a[22] = new Area(new Rectangle(1, 0, 148, 110));
 		a[23] = new Area();
-//		Area def = new Area(new Rectangle(1, 0, 148, 110));
-//		for (int i = 19; i < a.length; i++)
-//			a[i] = (Area) def.clone();
 		return a;
 	}
 

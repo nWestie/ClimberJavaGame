@@ -32,7 +32,8 @@ public class ClimberMain extends JFrame {
 //			cont.add(menu);
 //			int levelNum = menu.waitForSelection();
 //			cont.remove(menu);
-			Level l1 = new LevelBuilder(frame);
+//			Level l1 = new LevelBuilder(frame);
+			Level l1 = new Level(frame, 1, 3, 18);
 			cont.add(l1);
 			frame.repaint();
 			l1.play();
