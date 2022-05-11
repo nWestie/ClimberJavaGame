@@ -17,7 +17,6 @@ public class ClimberMain extends JFrame {
 	}
 
 	public static void main(String[] args) {
-		// TODO Auto-generated method stub
 		ClimberMain frame = new ClimberMain("Climber");
 		frame.setExtendedState(Frame.MAXIMIZED_BOTH);
 //		frame.setBounds(10,10,1200,500);

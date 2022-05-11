@@ -1,11 +1,16 @@
 package main;
 
+import java.awt.Color;
 import java.awt.Container;
 import java.awt.Graphics;
+import java.awt.Graphics2D;
+import java.awt.Rectangle;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.awt.geom.AffineTransform;
+import java.awt.geom.Area;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -21,10 +26,11 @@ public class Level extends JPanel {
 	protected FScale scaler;
 	protected File lvlEnvFile;
 	protected Player plr;
+	protected int xScroll, yScroll;
 	protected int[][] board = new int[20][40];
 	protected static Block[] blocks;
 
-	public Level(Container cont, boolean noListen) {
+	public Level(Container cont, String lvlFile, boolean noListen) {
 		scaler = new FScale(cont, this, 1920, 1080);
 		if (!noListen) {
 			addKeyListener(new Level.KeyEvents());
@@ -35,30 +41,75 @@ public class Level extends JPanel {
 		}
 		plr = new Player(300, 400);
 		blocks = Block.getBlockList();
-		lvlEnvFile = new File(ClimberMain.dir, "/Lvls/LvlTest.clvl");
+		lvlEnvFile = new File(ClimberMain.dir, lvlFile);
 		try (ObjectInputStream inStream = new ObjectInputStream(new FileInputStream(lvlEnvFile));) {
 			Object tmpRead = inStream.readObject();
 			if (!(tmpRead instanceof int[][])) {
 				throw new IOException("Invalid level file");
 			}
 			board = (int[][]) tmpRead;
-			System.out.println("Board loaded");
+//			System.out.println("Board loaded");
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
 	}
 
-	public Level(Container cont) {
-		this(cont, false);
+	public Level(Container cont, String lvlFile) {
+		this(cont, lvlFile, false);
 	}
 
 	@Override
 	public void paintComponent(Graphics g) {
 		super.paintComponent(g);
-	}
+		int w = 151, h = 111;
+		Graphics2D g2d = scaler.scale(g);
+		g2d.translate(-xScroll, -yScroll);
+		
+		Rectangle bounds = scaler.drawSize();
+		
+		//clamp scrolling to board size
+		xScroll = Math.max(0, Math.min(xScroll, (board[0].length) * w - bounds.width - 1));
+		yScroll = Math.max(0, Math.min(yScroll, (board.length) * h - bounds.height - 1));
 
+		//draw background tiles
+		Rectangle bBounds = new Rectangle(0, 0, 0, 0); // bounds in units of BG tiles
+		bBounds.x = (xScroll + bounds.x) / w;
+		bBounds.y = (yScroll + bounds.y) / h;
+		bBounds.width = (xScroll + bounds.width + bounds.x) / w + 1;
+		bBounds.height = (yScroll + bounds.height + bounds.y) / h + 1;
+		for (int i = bBounds.y; i < bBounds.height; i++) {
+			for (int j = bBounds.x; j < bBounds.width; j++) {
+				g2d.drawImage(blocks[board[i][j]].getImg(), null, j * w, i * h);
+			}
+
+		}
+
+		Area tmp = blocks[board[cursor.y][cursor.x]].getBounds();
+		AffineTransform tempTrans = new AffineTransform();
+		tempTrans.setToTranslation(cursor.x * w, cursor.y * h);
+		tmp = tmp.createTransformedArea(tempTrans);
+		g2d.draw(tmp);
+
+		plr.draw(g2d);
+	}
+	/**
+	 * allows calling only grandparent(jPanel) paintComponent
+	 * @param g
+	 * @param pass
+	 */
+	public void paintComponent(Graphics g, boolean pass) {
+		super.paintComponent(g);		
+	}
 	public void play() {
 		requestFocusInWindow();
+		long nextLoopTime;
+		while (true) {
+			nextLoopTime = System.currentTimeMillis() + 1000 / ClimberMain.fRate;
+			plr.updatePhysics();
+			repaint();
+			while (System.currentTimeMillis() < nextLoopTime)
+				;
+		}
 	}
 
 	protected class KeyEvents extends KeyAdapter {

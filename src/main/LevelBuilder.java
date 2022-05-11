@@ -11,6 +11,8 @@ import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseWheelEvent;
+import java.awt.geom.AffineTransform;
+import java.awt.geom.Area;
 import java.io.FileOutputStream;
 import java.io.ObjectOutputStream;
 
@@ -23,7 +25,7 @@ public class LevelBuilder extends Level {
 	protected int w, h;
 
 	public LevelBuilder(Container cont) {
-		super(cont, true);
+		super(cont, "/Lvls/Lvl1.clvl", true);
 		x = 0;
 		y = 0;
 		spd = 30;
@@ -42,15 +44,18 @@ public class LevelBuilder extends Level {
 
 	@Override
 	public void paintComponent(Graphics g) {
-		super.paintComponent(g);
-
+		super.paintComponent(g, true);
 		Rectangle bounds = scaler.drawSize();
+		
+		//clamp scrolling to board size
 		x = Math.max(0, Math.min(x, (board[0].length) * w - bounds.width - 1));
 		y = Math.max(0, Math.min(y, (board.length) * h - bounds.height - 1));
 
 		Graphics2D g2d = scaler.scale(g);
 		g2d.translate(-x, -y);
 		g2d.setColor(Color.red);
+		
+		//draw background tiles
 		Rectangle bBounds = new Rectangle(0, 0, 0, 0); // bounds in units of BG tiles
 		bBounds.x = (x + bounds.x) / w;
 		bBounds.y = (y + bounds.y) / h;
@@ -66,15 +71,19 @@ public class LevelBuilder extends Level {
 		} catch (Exception e) {
 			System.out.println("BG Bounds err");
 		}
-		g2d.drawRect(cursor.x * w, cursor.y * h, w, h);
+		Area tmp = blocks[board[cursor.y][cursor.x]].getBounds();
+		AffineTransform tempTrans = new AffineTransform();
+		tempTrans.setToTranslation(cursor.x * w, cursor.y * h);
+		tmp = tmp.createTransformedArea(tempTrans);
+		g2d.draw(tmp);
+//		g2d.drawRect(cursor.x * w, cursor.y * h, w, h);
 		g2d.translate(x, y);
 		plr.draw(g2d);
 		g2d.drawString(String.format("%d, %d", cursor.x, cursor.y), 20, 20);
 	}
 
 	public void play() {
-
-		super.play();
+		requestFocusInWindow();
 		long nextLoopTime;
 		while (true) {
 			nextLoopTime = System.currentTimeMillis() + 1000 / ClimberMain.fRate;
