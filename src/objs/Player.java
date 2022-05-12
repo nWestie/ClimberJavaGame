@@ -51,8 +51,8 @@ public class Player implements Drawable {
 		xVel += + acc * inpDir;
 		xVel = (int) (xVel * (1 - dAcc));
 		yVel += accG;
-		x += xVel;
-		y += yVel;
+//		x += xVel;
+//		y += yVel;
 		//update transforms
 		genTrans.setToTranslation(x, y);
 //		genTrans.rotate((getxVel()) / 120.0);
@@ -124,6 +124,10 @@ public class Player implements Drawable {
 
 	public void setxVel(double xVel) {
 		this.xVel = xVel;
+	}
+
+	public void stepX() {
+		x += xVel;
 	}
 
 }

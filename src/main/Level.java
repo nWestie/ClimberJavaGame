@@ -87,52 +87,34 @@ public class Level extends JPanel {
 		Area plrBounds = plr.getBounds();
 		int plrBX = plr.getX() / blockW;
 		int plrBY = plr.getY() / blockH;
-		double mag, tMoveDist, xCoef = 0, yCoef = 0;
-		mag = Math.sqrt(Math.pow(plr.getxVel(), 2) + Math.pow(plr.getyVel(), 2));
-		if (mag != 0) {
-			xCoef = plr.getxVel() / mag;
-			yCoef = plr.getyVel() / mag;
-		}
-//		System.out.printf("%.4f, %.4f\n", xCoef, yCoef);
 		// Allocate once
 		AffineTransform tmpTrans = new AffineTransform();
 		Area tmpArea;
 		Rectangle tmpCol;
-		// iterate through adjacent blocks
-		for (int j = plrBX - 1; j <= plrBX + 1; j++) {
-			if (j < 0 || j >= board[0].length)
-				continue;
-			for (int i = plrBY - 1; i <= plrBY + 1; i++) {
-				if (i < 0 || i >= board.length)
+		{
+			plr.stepX();
+			// iterate through adjacent blocks
+			for (int j = plrBX - 1; j <= plrBX + 1; j++) {
+				if (j < 0 || j >= board[0].length)
 					continue;
-				// get overlapping region
-				tmpTrans = new AffineTransform();
-				tmpTrans.setToTranslation(j * blockW, i * blockH);
-				tmpArea = blocks[board[i][j]].getBounds();
-				tmpArea = tmpArea.createTransformedArea(tmpTrans);
-				tmpArea.intersect(plrBounds);
-				if (tmpArea.isEmpty())
-					continue;
-				tmpCol = tmpArea.getBounds();
-				
-				// resolve collision
-				tMoveDist = -Math.min(Math.abs(tmpCol.width / xCoef), Math.abs(tmpCol.height / yCoef));
-				plr.forceMove((int) (tMoveDist * xCoef), (int) (tMoveDist * yCoef));
-				if (Math.abs(xCoef)> Math.abs(yCoef))
-					plr.setxVel(0);
-				else
-					plr.setyVel(0);
-
-				// recalculate player state
-				plrBounds = plr.getBounds();
-				xCoef = 0;
-				yCoef = 0;
-				mag = Math.sqrt(Math.pow(plr.getxVel(), 2) + Math.pow(plr.getyVel(), 2));
-				if (mag != 0) {
-					xCoef = plr.getxVel() / mag;
-					yCoef = plr.getyVel() / mag;
+				for (int i = plrBY - 1; i <= plrBY + 1; i++) {
+					if (i < 0 || i >= board.length)
+						continue;
+					// get overlapping region
+					tmpTrans = new AffineTransform();
+					tmpTrans.setToTranslation(j * blockW, i * blockH);
+					tmpArea = blocks[board[i][j]].getBounds();
+					tmpArea = tmpArea.createTransformedArea(tmpTrans);
+					tmpArea.intersect(plrBounds);
+					if (tmpArea.isEmpty())
+						continue;
+					tmpCol = tmpArea.getBounds();
+					
+					// Handle collisions
+					plr.forceMove(tmpCol.width, 0);
+					// recalculate player state
+					plrBounds = plr.getBounds();
 				}
-
 			}
 		}
 	}
