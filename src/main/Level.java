@@ -4,11 +4,13 @@ import java.awt.Color;
 import java.awt.Container;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
+import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.awt.event.MouseWheelEvent;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.Area;
 import java.io.File;
@@ -26,10 +28,11 @@ public class Level extends JPanel {
 	protected FScale scaler;
 	protected File lvlEnvFile;
 	protected Player plr;
-	protected int[][] board = new int[20][40];
+	protected int[][] board;
 	protected static Block[] blocks;
 	protected int blockW = 151, blockH = 111;
 	protected int xScroll, yScroll = 10 * blockH;
+	private Point cursor = new Point();
 
 	public Level(Container cont, String lvlFile, int plrX, int plrY, boolean noListen) {
 		scaler = new FScale(cont, this, 1920, 1080);
@@ -82,17 +85,29 @@ public class Level extends JPanel {
 			for (int j = bBounds.x; j < bBounds.width; j++) {
 				g2d.drawImage(blocks[board[i][j]].getImg(), null, j * blockW, i * blockH);
 			}
-
 		}
-		
-
-//		Area tmp = blocks[board[cursor.y][cursor.x]].getBounds();
-//		AffineTransform tempTrans = new AffineTransform();
-//		tempTrans.setToTranslation(cursor.x * w, cursor.y * h);
-//		tmp = tmp.createTransformedArea(tempTrans);
-//		g2d.draw(tmp);
-
 		plr.draw(g2d);
+		
+		g2d.setColor(Color.red);
+		int plrBX = plr.getX() / blockW;
+		int plrBY = plr.getY() / blockH;
+		AffineTransform tmpTrans = new AffineTransform();
+		Area tmpArea;
+		Area plrBounds = plr.getBounds();
+		for (int j = plrBX - 1; j <= plrBX + 1; j++) {
+			if (j < 0 || j >= board[0].length)
+				continue;
+			for (int i = plrBY - 1; i <= plrBY+1; i++) {
+				tmpArea = blocks[board[i][j]].getBounds();
+				tmpTrans = new AffineTransform();
+				tmpTrans.setToTranslation(j * blockW, i*blockH);
+				tmpArea = tmpArea.createTransformedArea(tmpTrans);
+				g2d.draw(tmpArea);
+				tmpArea.intersect(plrBounds);
+				g2d.fill(tmpArea.getBounds());
+			}
+		}
+
 	}
 
 	/**
@@ -110,10 +125,14 @@ public class Level extends JPanel {
 		long nextLoopTime;
 		while (true) {
 			nextLoopTime = System.currentTimeMillis() + 1000 / ClimberMain.fRate;
+			
 			plr.updatePhysics();
 			repaint();
 			while (System.currentTimeMillis() < nextLoopTime)
 				;
+			
+//			for(int i = ; i < )
+			
 		}
 	}
 
@@ -144,7 +163,7 @@ public class Level extends JPanel {
 				System.exit(0);
 			}
 			plr.inpDir = r - l;
-			plr.setyVel(d-u);
+			plr.setyVel(d - u);
 		}
 
 		public void keyReleased(KeyEvent e) {
@@ -169,19 +188,19 @@ public class Level extends JPanel {
 				break;
 			}
 			plr.inpDir = r - l;
-			plr.setyVel(d-u);
+			plr.setyVel(d - u);
 		}
 	}
 
 	private class MouseEvents extends MouseAdapter {
+
 		@Override
 		public void mouseMoved(MouseEvent e) {
-
+			double s = scaler.getScale();
+			cursor.x = (int) (xScroll + (e.getX() / s)) / blockW;
+			cursor.y = (int) (yScroll + (e.getY() / s)) / blockH;
 		}
 
-		@Override
-		public void mouseClicked(MouseEvent e) {
 
-		}
 	}
 }
