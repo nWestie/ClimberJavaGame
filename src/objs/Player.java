@@ -22,17 +22,20 @@ public class Player implements Drawable {
 	protected double rot = 0;
 	protected double xVel = 0;
 	private double yVel = 0;
-	protected int x, y;
+	private int x;
+	private int y;
+	
 	public int inpDir = 0;
 	protected double acc = 4;
 	protected double dAcc = .1;
-	protected double accG = .5;
+	protected double accG = 2;
 	protected Area bounds, movingBounds;
 
 	public Player(int x, int y) {
 		this.x = x;
 		this.y = y;
-		bounds = new Area(new Ellipse2D.Float(-25, -99, 50, 116));
+		bounds = new Area(new Ellipse2D.Float(-25, -99, 50, 90));
+		bounds.add(new Area(new Ellipse2D.Float(-18,-18,36,36)));
 		movingBounds = bounds;
 		laPiv = new Point(-14, -56);
 		raPiv = new Point(14, -56);
@@ -48,20 +51,21 @@ public class Player implements Drawable {
 	}
 
 	public void updateRequestVelocity() {
-		xVel += + acc * inpDir;
+		xVel += acc * inpDir;
 		xVel = (int) (xVel * (1 - dAcc));
 		yVel += accG;
 //		x += xVel;
 //		y += yVel;
 		//update transforms
 		genTrans.setToTranslation(x, y);
-//		genTrans.rotate((getxVel()) / 120.0);
+		genTrans.rotate((getxVel()) / 120.0);
 		movingBounds = bounds.createTransformedArea(genTrans);
-
+		
 	}
 
 	@Override
 	public void draw(Graphics2D g2d) {
+//		System.out.println("plr Draw");
 		g2d.setColor(Color.red);
 		g2d.draw(movingBounds);
 
@@ -75,7 +79,6 @@ public class Player implements Drawable {
 
 		g2d.rotate(x / 38.0);
 		g2d.drawImage(wheel, null, -18, -18);
-//		g2d.fillOval(-18, -1, 3, 3);
 
 		g2d.setTransform(drawTrans);
 		g2d.translate(laPiv.x, laPiv.y);
@@ -119,15 +122,15 @@ public class Player implements Drawable {
 	}
 
 	public Area getBounds() {
+		genTrans.setToTranslation(x, y);
+		genTrans.rotate((getxVel()) / 120.0);
+		movingBounds = bounds.createTransformedArea(genTrans);
+
 		return movingBounds;
 	}
 
 	public void setxVel(double xVel) {
 		this.xVel = xVel;
-	}
-
-	public void stepX() {
-		x += xVel;
 	}
 
 }

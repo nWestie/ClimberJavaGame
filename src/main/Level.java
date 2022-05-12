@@ -83,38 +83,63 @@ public class Level extends JPanel {
 	}
 
 	private void solvePhysics() {
+//		System.out.println("solve physics");
 		// get player data
 		Area plrBounds = plr.getBounds();
 		int plrBX = plr.getX() / blockW;
 		int plrBY = plr.getY() / blockH;
+		double storePlrXVel = plr.getxVel();
+		double storePlrYVel = plr.getyVel();
 		// Allocate once
 		AffineTransform tmpTrans = new AffineTransform();
 		Area tmpArea;
 		Rectangle tmpCol;
-		{
-			plr.stepX();
-			// iterate through adjacent blocks
-			for (int j = plrBX - 1; j <= plrBX + 1; j++) {
-				if (j < 0 || j >= board[0].length)
+		boolean writeFlag = false;
+		plr.setY(plr.getY()+(int)storePlrYVel);
+		// iterate through adjacent blocks
+		for (int j = plrBX - 1; j <= plrBX + 1; j++) {
+			if (j < 0 || j >= board[0].length)
+				continue;
+			for (int i = plrBY - 1; i <= plrBY + 1; i++) {
+				if (i < 0 || i >= board.length)
 					continue;
-				for (int i = plrBY - 1; i <= plrBY + 1; i++) {
-					if (i < 0 || i >= board.length)
-						continue;
-					// get overlapping region
-					tmpTrans = new AffineTransform();
-					tmpTrans.setToTranslation(j * blockW, i * blockH);
-					tmpArea = blocks[board[i][j]].getBounds();
-					tmpArea = tmpArea.createTransformedArea(tmpTrans);
-					tmpArea.intersect(plrBounds);
-					if (tmpArea.isEmpty())
-						continue;
-					tmpCol = tmpArea.getBounds();
-					
-					// Handle collisions
-					plr.forceMove(tmpCol.width, 0);
-					// recalculate player state
-					plrBounds = plr.getBounds();
-				}
+				// get overlapping region
+				tmpTrans.setToTranslation(j * blockW, i * blockH);
+				tmpArea = blocks[board[i][j]].getBounds();
+				tmpArea = tmpArea.createTransformedArea(tmpTrans);
+				tmpArea.intersect(plrBounds);
+				tmpCol = tmpArea.getBounds();
+				if (tmpArea.isEmpty()||tmpCol.width<2)
+					continue;
+				// Handle collisions
+				plr.forceMove(0,(tmpCol.height-1) * (storePlrYVel > 0 ? -1 : 1));
+				plr.setyVel(0);//(storePlrYVel > 0 ? -3 : 3));
+				// recalculate player state
+				plrBounds = plr.getBounds();
+			}
+		}
+		repaint();
+		plr.setX(plr.getX()+(int)storePlrXVel);
+		// iterate through adjacent blocks
+		for (int j = plrBX - 1; j <= plrBX + 1; j++) {
+			if (j < 0 || j >= board[0].length)
+				continue;
+			for (int i = plrBY - 1; i <= plrBY + 1; i++) {
+				if (i < 0 || i >= board.length)
+					continue;
+				// get overlapping region
+				tmpTrans.setToTranslation(j * blockW, i * blockH);
+				tmpArea = blocks[board[i][j]].getBounds();
+				tmpArea = tmpArea.createTransformedArea(tmpTrans);
+				tmpArea.intersect(plrBounds);
+				tmpCol = tmpArea.getBounds();
+				if (tmpArea.isEmpty()||tmpCol.height<2)
+					continue;
+				// Handle collisions
+//				plr.forceMove((tmpCol.width-1) * (storePlrXVel > 0 ? -1 : 1), 0);
+//				plr.setxVel(0);
+//				// recalculate player state
+//				plrBounds = plr.getBounds();
 			}
 		}
 	}
@@ -122,7 +147,6 @@ public class Level extends JPanel {
 	@Override
 	public void paintComponent(Graphics g) {
 		super.paintComponent(g);
-
 		Graphics2D g2d = scaler.scale(g);
 		g2d.translate(-xScroll, -yScroll);
 
@@ -133,6 +157,7 @@ public class Level extends JPanel {
 		yScroll = Math.max(0, Math.min(yScroll, (board.length) * blockH - bounds.height - 1));
 
 		// draw background tiles
+		g2d.setColor(Color.red);
 		Rectangle bBounds = new Rectangle(0, 0, 0, 0); // bounds in units of BG tiles
 		bBounds.x = (xScroll + bounds.x) / blockW;
 		bBounds.y = (yScroll + bounds.y) / blockH;
@@ -141,6 +166,7 @@ public class Level extends JPanel {
 		for (int i = bBounds.y; i < bBounds.height; i++) {
 			for (int j = bBounds.x; j < bBounds.width; j++) {
 				g2d.drawImage(blocks[board[i][j]].getImg(), null, j * blockW, i * blockH);
+				g2d.drawString(String.format("%d,%d", i, j), j*blockW+10, i*blockH+20);
 			}
 		}
 		plr.draw(g2d);
