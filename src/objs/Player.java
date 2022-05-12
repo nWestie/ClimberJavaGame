@@ -26,6 +26,7 @@ public class Player implements Drawable {
 	public int inpDir = 0;
 	protected double acc = 4;
 	protected double dAcc = .1;
+	protected double accG = .5;
 	protected Area bounds, movingBounds;
 
 	public Player(int x, int y) {
@@ -46,15 +47,17 @@ public class Player implements Drawable {
 		}
 	}
 
-	public void updatePhysics() {
-		xVel += acc * inpDir;
+	public void updateRequestVelocity() {
+		xVel += + acc * inpDir;
 		xVel = (int) (xVel * (1 - dAcc));
+		yVel += accG;
 		x += xVel;
-		y += yVel*5;
+		y += yVel;
+		//update transforms
 		genTrans.setToTranslation(x, y);
-		genTrans.rotate((xVel) / 120.0);
+//		genTrans.rotate((getxVel()) / 120.0);
 		movingBounds = bounds.createTransformedArea(genTrans);
-		
+
 	}
 
 	@Override
@@ -82,6 +85,11 @@ public class Player implements Drawable {
 		g2d.setTransform(prev);
 	}
 
+	public void forceMove(int x, int y) {
+		this.x += x;
+		this.y += y;
+	}
+
 	public int getX() {
 		return x;
 	}
@@ -98,6 +106,10 @@ public class Player implements Drawable {
 		this.y = y;
 	}
 
+	public double getxVel() {
+		return xVel;
+	}
+
 	public double getyVel() {
 		return yVel;
 	}
@@ -108,6 +120,10 @@ public class Player implements Drawable {
 
 	public Area getBounds() {
 		return movingBounds;
+	}
+
+	public void setxVel(double xVel) {
+		this.xVel = xVel;
 	}
 
 }

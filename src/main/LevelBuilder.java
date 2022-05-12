@@ -87,7 +87,7 @@ public class LevelBuilder extends Level {
 		long nextLoopTime;
 		while (true) {
 			nextLoopTime = System.currentTimeMillis() + 1000 / ClimberMain.fRate;
-			plr.updatePhysics();
+			plr.updateRequestVelocity();
 			repaint();
 			while (System.currentTimeMillis() < nextLoopTime)
 				;
