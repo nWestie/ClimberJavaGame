@@ -3,7 +3,6 @@ package objs;
 import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.Point;
-import java.awt.Rectangle;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.Area;
 import java.awt.geom.Ellipse2D;
@@ -53,9 +52,9 @@ public class Player implements Drawable {
 	public void updateRequestVelocity() {
 		xVel += acc * inpDir;
 		xVel = (int) (xVel * (1 - dAcc));
-		yVel += accG;
-//		x += xVel;
-//		y += yVel;
+//		yVel += accG;
+		x += xVel;
+		y += yVel;
 		//update transforms
 		genTrans.setToTranslation(x, y);
 		genTrans.rotate((getxVel()) / 120.0);

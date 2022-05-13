@@ -7,19 +7,19 @@ import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.Rectangle;
-import java.awt.Toolkit;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.Area;
+import java.awt.geom.Line2D;
+import java.awt.geom.PathIterator;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 
-import javax.swing.ImageIcon;
 import javax.swing.JPanel;
 
 import objs.Block;
@@ -74,7 +74,7 @@ public class Level extends JPanel {
 			nextLoopTime = System.currentTimeMillis() + 1000 / ClimberMain.fRate;
 
 			plr.updateRequestVelocity();
-			solvePhysics();
+//			solvePhysics();
 
 			repaint();
 			while (System.currentTimeMillis() < nextLoopTime)
@@ -94,54 +94,7 @@ public class Level extends JPanel {
 		AffineTransform tmpTrans = new AffineTransform();
 		Area tmpArea;
 		Rectangle tmpCol;
-		boolean writeFlag = false;
-		plr.setY(plr.getY()+(int)storePlrYVel);
-		// iterate through adjacent blocks
-		for (int j = plrBX - 1; j <= plrBX + 1; j++) {
-			if (j < 0 || j >= board[0].length)
-				continue;
-			for (int i = plrBY - 1; i <= plrBY + 1; i++) {
-				if (i < 0 || i >= board.length)
-					continue;
-				// get overlapping region
-				tmpTrans.setToTranslation(j * blockW, i * blockH);
-				tmpArea = blocks[board[i][j]].getBounds();
-				tmpArea = tmpArea.createTransformedArea(tmpTrans);
-				tmpArea.intersect(plrBounds);
-				tmpCol = tmpArea.getBounds();
-				if (tmpArea.isEmpty()||tmpCol.width<2)
-					continue;
-				// Handle collisions
-				plr.forceMove(0,(tmpCol.height-1) * (storePlrYVel > 0 ? -1 : 1));
-				plr.setyVel(0);//(storePlrYVel > 0 ? -3 : 3));
-				// recalculate player state
-				plrBounds = plr.getBounds();
-			}
-		}
-		repaint();
-		plr.setX(plr.getX()+(int)storePlrXVel);
-		// iterate through adjacent blocks
-		for (int j = plrBX - 1; j <= plrBX + 1; j++) {
-			if (j < 0 || j >= board[0].length)
-				continue;
-			for (int i = plrBY - 1; i <= plrBY + 1; i++) {
-				if (i < 0 || i >= board.length)
-					continue;
-				// get overlapping region
-				tmpTrans.setToTranslation(j * blockW, i * blockH);
-				tmpArea = blocks[board[i][j]].getBounds();
-				tmpArea = tmpArea.createTransformedArea(tmpTrans);
-				tmpArea.intersect(plrBounds);
-				tmpCol = tmpArea.getBounds();
-				if (tmpArea.isEmpty()||tmpCol.height<2)
-					continue;
-				// Handle collisions
-//				plr.forceMove((tmpCol.width-1) * (storePlrXVel > 0 ? -1 : 1), 0);
-//				plr.setxVel(0);
-//				// recalculate player state
-//				plrBounds = plr.getBounds();
-			}
-		}
+
 	}
 
 	@Override
@@ -166,32 +119,73 @@ public class Level extends JPanel {
 		for (int i = bBounds.y; i < bBounds.height; i++) {
 			for (int j = bBounds.x; j < bBounds.width; j++) {
 				g2d.drawImage(blocks[board[i][j]].getImg(), null, j * blockW, i * blockH);
-				g2d.drawString(String.format("%d,%d", i, j), j*blockW+10, i*blockH+20);
+				g2d.drawString(String.format("%d,%d", i, j), j * blockW + 10, i * blockH + 20);
 			}
 		}
 		plr.draw(g2d);
 
-//		g2d.setColor(Color.red);
-//		int plrBX = plr.getX() / blockW;
-//		int plrBY = plr.getY() / blockH;
-//		AffineTransform tmpTrans = new AffineTransform();
-//		Area tmpArea;
-//		Area plrBounds = plr.getBounds();
-//		for (int j = plrBX - 1; j <= plrBX + 1; j++) {
-//			if (j < 0 || j >= board[0].length)
-//				continue;
-//			for (int i = plrBY - 1; i <= plrBY + 1; i++) {
-//				if (i < 0 || i >= board.length)
-//					continue;
-//				tmpArea = blocks[board[i][j]].getBounds();
-//				tmpTrans = new AffineTransform();
-//				tmpTrans.setToTranslation(j * blockW, i * blockH);
-//				tmpArea = tmpArea.createTransformedArea(tmpTrans);
-//				g2d.draw(tmpArea);
-//				tmpArea.intersect(plrBounds);
-//				g2d.fill(tmpArea.getBounds());
-//			}
-//		}
+		g2d.setColor(Color.red);
+		// setup, get player data
+		int plrBX = plr.getX() / blockW;
+		int plrBY = plr.getY() / blockH;
+		AffineTransform tmpTrans = new AffineTransform();
+		Area tmpArea, overlap = new Area();
+		Area plrBounds = plr.getBounds();
+		// get overlapping area
+		for (int j = plrBX - 1; j <= plrBX + 1; j++) {
+			if (j < 0 || j >= board[0].length)
+				continue;
+			for (int i = plrBY - 1; i <= plrBY + 1; i++) {
+				if (i < 0 || i >= board.length)
+					continue;
+				tmpArea = blocks[board[i][j]].getBounds();
+				tmpTrans = new AffineTransform();
+				tmpTrans.setToTranslation(j * blockW, i * blockH);
+				tmpArea = tmpArea.createTransformedArea(tmpTrans);
+				g2d.draw(tmpArea);
+				tmpArea.intersect(plrBounds);
+				overlap.add(tmpArea);
+			}
+		}
+		if (overlap.isEmpty())
+			return;
+		g2d.fill(overlap);
+		repaint();
+		float[] coord = new float[6];
+		float[] lCoord = new float[6];
+		int type;
+		float x1 = -1, x2 = 0, y1 = 0, y2 = 0;
+		Line2D.Float normLine;
+		int i = 0;
+		PathIterator oPath = overlap.getPathIterator(null);
+		if (oPath.isDone())
+			return;
+		type = oPath.currentSegment(lCoord);
+		oPath.next();
+		while (!oPath.isDone()) {
+			type = oPath.currentSegment(coord);
+			oPath.next();
+			if (!(type == PathIterator.SEG_LINETO)) {
+				if (x1 != -1)
+					break;
+				continue;
+			}
+			x1 = lCoord[0];
+			y1 = lCoord[1];
+			x2 = coord[0];
+			y2 = coord[1];
+			if (oPath.isDone())
+				break;
+			type = oPath.currentSegment(coord);
+			if (type == PathIterator.SEG_LINETO) {
+				x2 = coord[0];
+				y2 = coord[1];
+			}
+			lCoord = coord;
+		}
+		normLine = new Line2D.Float(x1, y1, x2, y2);
+		g2d.setColor(Color.green);
+		g2d.draw(normLine);
 
 	}
 
@@ -232,7 +226,7 @@ public class Level extends JPanel {
 				System.exit(0);
 			}
 			plr.inpDir = r - l;
-			plr.setyVel(d - u);
+			plr.setyVel(5 * (d - u));
 		}
 
 		public void keyReleased(KeyEvent e) {
@@ -257,7 +251,7 @@ public class Level extends JPanel {
 				break;
 			}
 			plr.inpDir = r - l;
-			plr.setyVel(d - u);
+			plr.setyVel(5 * (d - u));
 		}
 	}
 
