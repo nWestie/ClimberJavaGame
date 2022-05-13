@@ -19,6 +19,8 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
+import java.util.ArrayList;
+import java.util.Arrays;
 
 import javax.swing.JPanel;
 
@@ -152,40 +154,13 @@ public class Level extends JPanel {
 		g2d.fill(overlap);
 		repaint();
 		float[] coord = new float[6];
-		float[] lCoord = new float[6];
+		ArrayList<Float[]> coords = new ArrayList<>();
 		int type;
-		float x1 = -1, x2 = 0, y1 = 0, y2 = 0;
 		Line2D.Float normLine;
-		int i = 0;
 		PathIterator oPath = overlap.getPathIterator(null);
-		if (oPath.isDone())
-			return;
-		type = oPath.currentSegment(lCoord);
-		oPath.next();
-		while (!oPath.isDone()) {
-			type = oPath.currentSegment(coord);
-			oPath.next();
-			if (!(type == PathIterator.SEG_LINETO)) {
-				if (x1 != -1)
-					break;
-				continue;
-			}
-			x1 = lCoord[0];
-			y1 = lCoord[1];
-			x2 = coord[0];
-			y2 = coord[1];
-			if (oPath.isDone())
-				break;
-			type = oPath.currentSegment(coord);
-			if (type == PathIterator.SEG_LINETO) {
-				x2 = coord[0];
-				y2 = coord[1];
-			}
-			lCoord = coord;
-		}
-		normLine = new Line2D.Float(x1, y1, x2, y2);
+		
 		g2d.setColor(Color.green);
-		g2d.draw(normLine);
+//		g2d.draw(normLine);
 
 	}
 
