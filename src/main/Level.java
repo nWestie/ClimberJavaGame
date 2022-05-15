@@ -11,16 +11,10 @@ import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.awt.geom.AffineTransform;
-import java.awt.geom.Area;
-import java.awt.geom.Line2D;
-import java.awt.geom.PathIterator;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
-import java.util.ArrayList;
-import java.util.Arrays;
 
 import javax.swing.JPanel;
 
@@ -34,7 +28,7 @@ public class Level extends JPanel {
 	protected Player plr;
 	protected int[][] board;
 	protected static Block[] blocks;
-	protected int blockW = 151, blockH = 111;
+	protected int blockW = Block.width, blockH = Block.height;
 	protected int xScroll, yScroll = 10 * blockH;
 	private Point cursor = new Point();
 
@@ -87,15 +81,7 @@ public class Level extends JPanel {
 	private void solvePhysics() {
 //		System.out.println("solve physics");
 		// get player data
-		Area plrBounds = plr.getBounds();
-		int plrBX = plr.getX() / blockW;
-		int plrBY = plr.getY() / blockH;
-		double storePlrXVel = plr.getxVel();
-		double storePlrYVel = plr.getyVel();
-		// Allocate once
-		AffineTransform tmpTrans = new AffineTransform();
-		Area tmpArea;
-		Rectangle tmpCol;
+//		Area plrBounds = plr.getBounds();
 
 	}
 
@@ -121,46 +107,39 @@ public class Level extends JPanel {
 		for (int i = bBounds.y; i < bBounds.height; i++) {
 			for (int j = bBounds.x; j < bBounds.width; j++) {
 				g2d.drawImage(blocks[board[i][j]].getImg(), null, j * blockW, i * blockH);
-				g2d.drawString(String.format("%d,%d", i, j), j * blockW + 10, i * blockH + 20);
+//				g2d.drawString(String.format("%d,%d", i, j), j * blockW + 10, i * blockH + 20);
 			}
 		}
+		// draw player
 		plr.draw(g2d);
 
-		g2d.setColor(Color.red);
 		// setup, get player data
-		int plrBX = plr.getX() / blockW;
-		int plrBY = plr.getY() / blockH;
-		AffineTransform tmpTrans = new AffineTransform();
-		Area tmpArea, overlap = new Area();
-		Area plrBounds = plr.getBounds();
-		// get overlapping area
+		g2d.setColor(Color.red);
+		int plrBX = (int)plr.getX() / blockW;
+		int plrBY = (int)plr.getY() / blockH;
+		float[] sVecs = new float[2];
 		for (int j = plrBX - 1; j <= plrBX + 1; j++) {
 			if (j < 0 || j >= board[0].length)
 				continue;
 			for (int i = plrBY - 1; i <= plrBY + 1; i++) {
 				if (i < 0 || i >= board.length)
 					continue;
-				tmpArea = blocks[board[i][j]].getBounds();
-				tmpTrans = new AffineTransform();
-				tmpTrans.setToTranslation(j * blockW, i * blockH);
-				tmpArea = tmpArea.createTransformedArea(tmpTrans);
-				g2d.draw(tmpArea);
-				tmpArea.intersect(plrBounds);
-				overlap.add(tmpArea);
+				blocks[board[i][j]].addCollisionVecs(j, i, plr.getMvBoundPts(), sVecs);
 			}
 		}
-		if (overlap.isEmpty())
+		if (sVecs[0] == 0 && sVecs[1] == 0)
 			return;
-		g2d.fill(overlap);
-		repaint();
-		float[] coord = new float[6];
-		ArrayList<Float[]> coords = new ArrayList<>();
-		int type;
-		Line2D.Float normLine;
-		PathIterator oPath = overlap.getPathIterator(null);
-		
+		double mag = Math.sqrt(Math.pow(sVecs[0], 2) + Math.pow(sVecs[1], 2));
+		sVecs[0] /= mag;
+		sVecs[1] /= mag;
 		g2d.setColor(Color.green);
-//		g2d.draw(normLine);
+		final double size = 50;
+		g2d.drawLine((int) plr.getX(), (int) plr.getY(), (int) (plr.getX() + size * sVecs[0]),
+				(int) (plr.getY() - size * sVecs[1]));
+		
+
+		g2d.translate(xScroll, yScroll);
+		g2d.drawString(String.format("%.2f, %.2f", sVecs[0], sVecs[1]), 20, 20);
 
 	}
 
@@ -231,12 +210,15 @@ public class Level extends JPanel {
 	}
 
 	private class MouseEvents extends MouseAdapter {
-
+		private double s = scaler.getScale();
 		@Override
 		public void mouseMoved(MouseEvent e) {
-			double s = scaler.getScale();
-			cursor.x = (int) (xScroll + (e.getX() / s)) / blockW;
-			cursor.y = (int) (yScroll + (e.getY() / s)) / blockH;
+			cursor.x = (int) (xScroll + (e.getX() / s));
+			cursor.y = (int) (yScroll + (e.getY() / s));
+		}
+		@Override
+		public void mouseClicked(MouseEvent e) {
+//			System.out.printf("%d, %d\n", cursor.x-plr.getX(), cursor.y-plr.getY());
 		}
 
 	}

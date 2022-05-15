@@ -6,6 +6,8 @@ import java.awt.Point;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.Area;
 import java.awt.geom.Ellipse2D;
+import java.awt.geom.Line2D;
+import java.awt.geom.Line2D.Float;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
@@ -21,21 +23,27 @@ public class Player implements Drawable {
 	protected double rot = 0;
 	protected double xVel = 0;
 	private double yVel = 0;
-	private int x;
-	private int y;
-	
+	private double x, y;
+
 	public int inpDir = 0;
 	protected double acc = 4;
 	protected double dAcc = .1;
 	protected double accG = 2;
-	protected Area bounds, movingBounds;
+	protected Point[] boundPts, mvBoundPts;
 
 	public Player(int x, int y) {
 		this.x = x;
 		this.y = y;
-		bounds = new Area(new Ellipse2D.Float(-25, -99, 50, 90));
-		bounds.add(new Area(new Ellipse2D.Float(-18,-18,36,36)));
-		movingBounds = bounds;
+		int[] xList = { 0, 12, 19, 14, 26, 13, 12, -12, -13, -26, -14, -19, -12 };
+		int[] yList = { 19, 14, 4, -13, -53, -71, -97, -97, -71, -53, -13, 4, 14 };
+		boundPts = new Point[xList.length];
+		for (int i = 0; i < xList.length; i++) {
+			boundPts[i] = new Point(xList[i], yList[i]);
+		}
+		mvBoundPts = new Point[xList.length];
+		for (int i = 0; i < xList.length; i++)
+			mvBoundPts[i] = (Point) boundPts[i].clone();
+		genLines(mvBoundPts);
 		laPiv = new Point(-14, -56);
 		raPiv = new Point(14, -56);
 		try {
@@ -55,18 +63,27 @@ public class Player implements Drawable {
 //		yVel += accG;
 		x += xVel;
 		y += yVel;
-		//update transforms
+		// update transforms
 		genTrans.setToTranslation(x, y);
 		genTrans.rotate((getxVel()) / 120.0);
-		movingBounds = bounds.createTransformedArea(genTrans);
-		
+		genTrans.transform(boundPts, 0, mvBoundPts, 0, boundPts.length);
+	}
+
+	public static Line2D.Float[] genLines(Point[] pts) {
+		Line2D.Float[] lines = new Line2D.Float[pts.length];
+		for (int i = 0; i < pts.length - 1; i++) {
+			int nI = i + 1;
+			lines[i] = new Line2D.Float(pts[i].x, pts[i].y, pts[nI].x, pts[nI].y);
+		}
+		int i = lines.length - 1;
+		int nI = 0;
+		lines[i] = new Line2D.Float(pts[i].x, pts[i].y, pts[nI].x, pts[nI].y);
+		return lines;
 	}
 
 	@Override
 	public void draw(Graphics2D g2d) {
 //		System.out.println("plr Draw");
-		g2d.setColor(Color.red);
-		g2d.draw(movingBounds);
 
 		AffineTransform prev = g2d.getTransform();
 		AffineTransform drawTrans = (AffineTransform) prev.clone();
@@ -85,6 +102,10 @@ public class Player implements Drawable {
 		g2d.translate(raPiv.x - laPiv.x, raPiv.y - laPiv.y);
 		g2d.drawImage(rArm, null, -2, -42);
 		g2d.setTransform(prev);
+		g2d.setColor(Color.red);
+//		Line2D.Float[] bounds = genLines(mvBoundPts);
+//		for (Line2D.Float l : bounds)
+//			g2d.draw(l);
 	}
 
 	public void forceMove(int x, int y) {
@@ -92,11 +113,11 @@ public class Player implements Drawable {
 		this.y += y;
 	}
 
-	public int getX() {
+	public double getX() {
 		return x;
 	}
 
-	public int getY() {
+	public double getY() {
 		return y;
 	}
 
@@ -120,16 +141,19 @@ public class Player implements Drawable {
 		this.yVel = yVel;
 	}
 
-	public Area getBounds() {
+	public Line2D.Float[] getBounds() {
 		genTrans.setToTranslation(x, y);
 		genTrans.rotate((getxVel()) / 120.0);
-		movingBounds = bounds.createTransformedArea(genTrans);
-
-		return movingBounds;
+		genTrans.transform(boundPts, 0, mvBoundPts, 0, boundPts.length);
+		return genLines(mvBoundPts);
 	}
 
 	public void setxVel(double xVel) {
 		this.xVel = xVel;
+	}
+
+	public Point[] getMvBoundPts() {
+		return mvBoundPts;
 	}
 
 }

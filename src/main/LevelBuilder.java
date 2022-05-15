@@ -12,9 +12,11 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseWheelEvent;
 import java.awt.geom.AffineTransform;
-import java.awt.geom.Area;
+import java.awt.geom.Line2D;
 import java.io.FileOutputStream;
 import java.io.ObjectOutputStream;
+
+import objs.Block;
 
 public class LevelBuilder extends Level {
 	private static final long serialVersionUID = 1L;
@@ -29,8 +31,8 @@ public class LevelBuilder extends Level {
 		x = 0;
 		y = 0;
 		spd = 30;
-		w = 151;
-		h = 111;
+		w = Block.width;
+		h = Block.height;
 		cursor = new Point(0, 0);
 		MouseAdapter m = new LvlMouseEvents();
 		addMouseListener(m);
@@ -71,12 +73,19 @@ public class LevelBuilder extends Level {
 		} catch (Exception e) {
 			System.out.println("BG Bounds err");
 		}
-		Area tmp = blocks[board[cursor.y][cursor.x]].getBounds();
-		AffineTransform tempTrans = new AffineTransform();
-		tempTrans.setToTranslation(cursor.x * w, cursor.y * h);
-		tmp = tmp.createTransformedArea(tempTrans);
-		g2d.draw(tmp);
-//		g2d.drawRect(cursor.x * w, cursor.y * h, w, h);
+		g2d.translate(cursor.x*w, cursor.y*h);
+		final int len = 10;
+		Line2D.Float[] lines = blocks[board[cursor.y][cursor.x]].getBounds();
+		float[][] vecs = blocks[board[cursor.y][cursor.x]].getVecs(); 
+		for(int i = 0; i < lines.length; i++) {			
+			g2d.setColor(Color.red);
+			g2d.draw(lines[i]);
+			g2d.setColor(Color.green);
+			float midX = (lines[i].x1+lines[i].x2)/2;
+			float midY = (lines[i].y1+lines[i].y2)/2;
+			g2d.drawLine((int)midX, (int)midY, (int)(midX+len*vecs[i][0]), (int)(midY-len*vecs[i][1]));
+		}
+		g2d.translate(-cursor.x*w, -cursor.y*h);
 		g2d.translate(x, y);
 		plr.draw(g2d);
 		g2d.drawString(String.format("%d, %d", cursor.x, cursor.y), 20, 20);
