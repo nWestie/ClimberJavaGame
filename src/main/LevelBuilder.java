@@ -77,6 +77,7 @@ public class LevelBuilder extends Level {
 		final int len = 10;
 		Line2D.Float[] lines = blocks[board[cursor.y][cursor.x]].getBounds();
 		float[][] vecs = blocks[board[cursor.y][cursor.x]].getVecs(); 
+		g2d.drawString(String.valueOf(board[cursor.y][cursor.x]), 10, 30);
 		for(int i = 0; i < lines.length; i++) {			
 			g2d.setColor(Color.red);
 			g2d.draw(lines[i]);
@@ -90,7 +91,7 @@ public class LevelBuilder extends Level {
 		g2d.drawString(String.format("%d, %d", cursor.x, cursor.y), 20, 20);
 	}
 
-	public void play() {
+	public int play() {
 		requestFocusInWindow();
 		long nextLoopTime;
 		while (true) {
@@ -126,6 +127,7 @@ public class LevelBuilder extends Level {
 				break;
 			case KeyEvent.VK_F:
 				envWriter.update();
+				break;
 			case KeyEvent.VK_ESCAPE:
 				System.exit(0);
 			}

@@ -9,7 +9,7 @@ import javax.swing.JFrame;
 
 public class ClimberMain extends JFrame {
 	private static final long serialVersionUID = 1L;
-	private static final boolean BUILDER = false;
+	private static int BUILDER = 0;
 	public static final String dir = System.getProperty("user.dir");
 	protected static final int fRate = 30;
 	protected static boolean exitFlag = false;
@@ -32,20 +32,24 @@ public class ClimberMain extends JFrame {
 		frame.setVisible(true);
 		frame.setCursor(new Cursor(Cursor.CROSSHAIR_CURSOR));
 
+		Menu menu = new Menu(frame);
+		int levelNum = 0;
 		while (true) {
 			Level lvl;
-			if (BUILDER) {
+			if (BUILDER != 0) {
 				lvl = new LevelBuilder(frame, 1);
 			} else {
-				Menu menu = new Menu(frame);
 				cont.add(menu);
-				int levelNum = menu.waitForSelection();
+				levelNum = menu.waitForSelection();
 				cont.remove(menu);
-				lvl = new Level(frame, 1, false);
+				lvl = new Level(frame, levelNum, false);
 			}
 			cont.add(lvl);
 			frame.repaint();
-			lvl.play();
+			int win = lvl.play();
+			if(win == 2) {
+				menu.setWon(levelNum);
+			}
 			cont.remove(lvl);
 		}
 	}

@@ -57,6 +57,18 @@ public class Menu extends JPanel {
 
 	}
 
+	public void setWon(int lNum) {
+		((MenuLevel)menuObjs[lNum-1]).played = true;
+	}
+
+	public int waitForSelection() {
+		while (!playLevel) {
+			repaint();
+		}
+		playLevel = false;
+		return levelSel;
+	}
+
 	private class MouseEvents extends MouseAdapter {
 		@Override
 		public void mouseMoved(MouseEvent e) {
@@ -95,12 +107,5 @@ public class Menu extends JPanel {
 					l.selected = false;
 			}
 		}
-	}
-
-	public int waitForSelection() {
-		while (!playLevel) {
-			repaint();
-		}
-		return levelSel;
 	}
 }

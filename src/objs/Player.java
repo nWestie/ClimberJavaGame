@@ -70,16 +70,16 @@ public class Player {
 			xWeight /= mag;
 			yWeight /= mag;
 //			yWeight;
-			x+=xWeight*35;
-			y+=yWeight*20;
-			
+			xVel += 6*xWeight;
+			yVel += 6*yWeight;
+			xVel *= .95; 
 		}else {
 			xVel += acc * inpDir;
 			xVel = (int) (xVel * (1 - dAcc));
-			yVel += accG;
-			x += xVel;
-			y += yVel;
 		}
+		yVel += accG;
+		x += xVel;
+		y += yVel;
 		updateBounds();
 	}
 
@@ -109,6 +109,7 @@ public class Player {
 
 		g2d.setColor(Color.black);
 		g2d.draw(rope);
+		g2d.fillOval((int)rope.x2-5, (int)rope.y2-5, 10, 10);
 
 		g2d.setTransform(drawTrans);
 

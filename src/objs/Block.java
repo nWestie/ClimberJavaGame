@@ -29,6 +29,7 @@ public class Block {
 	}
 
 	public void addCollisionVecs(int xBlock, int yBlock, Point[] obj, float[] outVec) {
+		
 		Point[] tObj = new Point[obj.length];
 		Line2D.Float[] tLines = new Line2D.Float[obj.length];
 		int xOff = xBlock * width;
@@ -48,7 +49,7 @@ public class Block {
 	}
 
 	private static void genBlocks() {
-		blocks = new Block[24];
+		blocks = new Block[25];
 		Line2D.Float[][] areas = genBoundLines();
 		float[][][] vecList = genCollisionVectors();
 		try {
@@ -60,6 +61,8 @@ public class Block {
 							vecList[ind1D]);
 				}
 			}
+			blocks[24] = new Block(master.getSubimage(4 * 153, 0 * 112, 151, 111), areas[24],vecList[24]);
+			
 
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
@@ -94,6 +97,7 @@ public class Block {
 		vecs[21] = new float[][] { { 1f, 0f }, { 0f, -1f }, { -.591f, .806f } };
 		vecs[22] = new float[][] { { 0f, 1f }, { 1f, 0f }, { 0f, -1f }, { -1f, 0f } };
 		vecs[23] = new float[][] {};
+		vecs[24] = new float[][] {};
 
 		return vecs;
 	}
@@ -124,6 +128,7 @@ public class Block {
 		a[21] = makeLineArray(new int[] { 151, 151, 0 }, new int[] { 0, 111, 111 }, 3);
 		a[22] = makeLineArray(new int[] { 0, 151, 151, 0 }, new int[] { 0, 0, 111, 111 }, 4);
 		a[23] = makeLineArray(new int[] {}, new int[] {}, 0);
+		a[24] = makeLineArray(new int[] {}, new int[] {}, 0);
 		return a;
 	}
 

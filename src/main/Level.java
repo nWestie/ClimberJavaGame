@@ -31,7 +31,7 @@ public class Level extends JPanel {
 	protected int blockW = Block.width, blockH = Block.height;
 	protected int xScroll, yScroll = 10 * blockH;
 	private Point cursor = new Point();
-	private boolean dieFlag;
+	public volatile int dieFlag = 0; // 1 is die, 2 win
 
 	public Level(Container cont, int lvlNum, boolean noListen) {
 		scaler = new FScale(cont, this, 1920, 1080);
@@ -61,8 +61,7 @@ public class Level extends JPanel {
 		}
 	}
 
-
-	public void play() {
+	public int play() {
 		requestFocusInWindow();
 		long nextLoopTime;
 		while (true) {
@@ -78,11 +77,14 @@ public class Level extends JPanel {
 				yScroll = (int) (plr.getY() - 600);
 			plr.updateRequestVelocity();
 			solvePhysics();
-			if (plr.getY() > board.length * blockH + 100) {
-				dieFlag = true;
-				while (dieFlag)
-					repaint();
-				return;
+			if (plr.getY() > board.length * blockH + 100 || dieFlag != 0) {
+				if (dieFlag == 0)
+					dieFlag = 1;
+				int tmp = dieFlag;
+				repaint();
+				while (dieFlag != 0)
+					;
+				return tmp;
 			}
 			repaint();
 			while (System.currentTimeMillis() < nextLoopTime)
@@ -93,6 +95,13 @@ public class Level extends JPanel {
 	private void solvePhysics() {
 		int plrBX = (int) plr.getX() / blockW;
 		int plrBY = (int) plr.getY() / blockH;
+		try {
+			if (board[plrBY][plrBX] == 24) {
+				dieFlag = 2;
+				return;
+			}
+		} catch (ArrayIndexOutOfBoundsException e) {
+		}
 		while (true) {
 			float[] sVecs = new float[2];
 			plr.updateBounds();
@@ -133,7 +142,11 @@ public class Level extends JPanel {
 		double mag = Math.sqrt(Math.pow(xWeight, 2) + Math.pow(yWeight, 2));
 		xWeight /= mag;
 		yWeight /= mag;
-		double ropeLen = plr.getRopeLen()*1.1 + 30;
+		double ropeLen = plr.getRopeLen() * 1.1 + 30;
+		if (ropeLen > 600) {
+			plr.releaseRope();
+			return;
+		}
 		rope.x2 = (int) (rope.x1 + ropeLen * xWeight);
 		rope.y2 = (int) (rope.y1 + ropeLen * yWeight);
 		while (true) {
@@ -186,16 +199,14 @@ public class Level extends JPanel {
 		}
 		// draw player
 		plr.draw(g2d, cursor);
-		Line2D.Float rope = plr.getRope();
-		int xBlock = (int) rope.x2 / Block.width;
-		int yBlock = (int) rope.y2 / Block.height;
-		for (Line2D.Float blockL : blocks[board[yBlock][yBlock]].getBounds()) {
-			g2d.draw(blockL);
-		}
-		g2d.translate(xScroll, yScroll);
-		if (dieFlag) {
+
+		if (dieFlag != 0) {
+			g2d.translate(xScroll, yScroll);
 			g2d.setFont(Pallete.menuFont);
-			g2d.drawString("YOU DIED", 700, 600);
+			if (dieFlag == 1)
+				g2d.drawString("YOU DIED", 700, 600);
+			else
+				g2d.drawString("YOU WIN!", 700, 600);
 			g2d.setFont(Pallete.menuFontSmall);
 			g2d.drawString("Click to Continue", 680, 650);
 		}
@@ -214,7 +225,6 @@ public class Level extends JPanel {
 
 	protected class KeyEvents extends KeyAdapter {
 		private int l = 0, r = 0;
-		private int u = 0, d = 0;
 
 		public void keyPressed(KeyEvent e) {
 			switch (e.getKeyCode()) {
@@ -227,19 +237,13 @@ public class Level extends JPanel {
 
 				l = 1;
 				break;
-			case KeyEvent.VK_DOWN:
-			case KeyEvent.VK_S:
-				d = 1;
+			case KeyEvent.VK_Q:
+				dieFlag = 1;
 				break;
-			case KeyEvent.VK_UP:
-			case KeyEvent.VK_W:
-				u = 1;
-				break;
-			case KeyEvent.VK_ESCAPE:
-				System.exit(0);
+//			case KeyEvent.VK_ESCAPE:
+//				System.exit(0);
 			}
 			plr.inpDir = r - l;
-//			plr.setyVel(5 * (d - u));
 		}
 
 		public void keyReleased(KeyEvent e) {
@@ -252,19 +256,8 @@ public class Level extends JPanel {
 			case KeyEvent.VK_A:
 				l = 0;
 				break;
-			case KeyEvent.VK_DOWN:
-			case KeyEvent.VK_S:
-				d = 0;
-				break;
-			case KeyEvent.VK_UP:
-			case KeyEvent.VK_W:
-				u = 0;
-				break;
-			default:
-				break;
 			}
 			plr.inpDir = r - l;
-//			plr.setyVel(5 * (d - u));
 		}
 	}
 
@@ -280,7 +273,7 @@ public class Level extends JPanel {
 		@Override
 		public void mousePressed(MouseEvent e) {
 			plr.ropeTo(cursor);
-			dieFlag = false;
+			dieFlag = 0;
 		}
 
 		@Override
