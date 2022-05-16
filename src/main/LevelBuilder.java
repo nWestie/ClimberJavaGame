@@ -87,7 +87,6 @@ public class LevelBuilder extends Level {
 		}
 		g2d.translate(-cursor.x*w, -cursor.y*h);
 		g2d.translate(x, y);
-		plr.draw(g2d);
 		g2d.drawString(String.format("%d, %d", cursor.x, cursor.y), 20, 20);
 	}
 

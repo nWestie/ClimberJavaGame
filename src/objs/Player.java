@@ -4,10 +4,7 @@ import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.geom.AffineTransform;
-import java.awt.geom.Area;
-import java.awt.geom.Ellipse2D;
 import java.awt.geom.Line2D;
-import java.awt.geom.Line2D.Float;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
@@ -16,19 +13,24 @@ import javax.imageio.ImageIO;
 
 import main.ClimberMain;
 
-public class Player implements Drawable {
+public class Player {
 	protected BufferedImage body, wheel, lArm, rArm;
 	protected AffineTransform genTrans = new AffineTransform();
 	protected Point laPiv, raPiv;
-	protected double rot = 0;
+
 	protected double xVel = 0;
 	private double yVel = 0;
 	private double x, y;
 
+	private boolean rLatched = false;
+	private Point ropeEnd, pointer;
+	private double ropeAng;
+	private double[] ropeVec = new double[2];
+
 	public int inpDir = 0;
-	protected double acc = 4;
+	protected double acc = 3.4;
 	protected double dAcc = .1;
-	protected double accG = 2;
+	protected double accG = 4;
 	protected Point[] boundPts, mvBoundPts;
 
 	public Player(int x, int y) {
@@ -60,9 +62,13 @@ public class Player implements Drawable {
 	public void updateRequestVelocity() {
 		xVel += acc * inpDir;
 		xVel = (int) (xVel * (1 - dAcc));
-//		yVel += accG;
+		yVel += accG;
 		x += xVel;
 		y += yVel;
+		updateBounds();
+	}
+
+	public void updateBounds() {
 		// update transforms
 		genTrans.setToTranslation(x, y);
 		genTrans.rotate((getxVel()) / 120.0);
@@ -81,13 +87,10 @@ public class Player implements Drawable {
 		return lines;
 	}
 
-	@Override
-	public void draw(Graphics2D g2d) {
-//		System.out.println("plr Draw");
+	public void draw(Graphics2D g2d, Point cursor) {
 
 		AffineTransform prev = g2d.getTransform();
 		AffineTransform drawTrans = (AffineTransform) prev.clone();
-//		genTrans.scale(.9,.9);
 		drawTrans.concatenate(genTrans);
 		g2d.setTransform(drawTrans);
 
@@ -97,20 +100,59 @@ public class Player implements Drawable {
 		g2d.drawImage(wheel, null, -18, -18);
 
 		g2d.setTransform(drawTrans);
-		g2d.translate(laPiv.x, laPiv.y);
-		g2d.drawImage(lArm, null, -31, -42);
-		g2d.translate(raPiv.x - laPiv.x, raPiv.y - laPiv.y);
-		g2d.drawImage(rArm, null, -2, -42);
+		if (pointer == null)
+			ropeAng = -Math.atan2((cursor.y - y + 56), (cursor.x - x));
+		if (Math.abs(ropeAng) > Math.PI / 2) {
+			g2d.translate(laPiv.x, laPiv.y);
+			g2d.rotate(-ropeAng-5*Math.PI/4);
+			g2d.drawImage(lArm, null, -31, -42);
+			g2d.setTransform(drawTrans);
+			g2d.translate(raPiv.x, raPiv.y);
+			g2d.drawImage(rArm, null, -2, -42);
+		} else {
+			g2d.translate(laPiv.x, laPiv.y);
+			g2d.drawImage(lArm, null, -31, -42);
+			g2d.translate(raPiv.x - laPiv.x, raPiv.y - laPiv.y);
+			g2d.rotate(-ropeAng-7*Math.PI/4);
+			g2d.drawImage(rArm, null, -2, -42);
+		}
 		g2d.setTransform(prev);
 		g2d.setColor(Color.red);
+		g2d.drawString(String.format("%.2f", ropeAng * 180 / Math.PI), (int) x + 20, (int) y + 20);
+		g2d.drawLine((int) x, (int) y - 56, (int) (x + 100 * Math.cos(ropeAng)),
+				(int) (y - 56 - 100 * Math.sin(ropeAng)));
 //		Line2D.Float[] bounds = genLines(mvBoundPts);
 //		for (Line2D.Float l : bounds)
 //			g2d.draw(l);
 	}
 
-	public void forceMove(int x, int y) {
+	public void updateRope() {
+
+	}
+
+	public void ropeTo(Point p) {
+		pointer = p;
+		ropeAng = -Math.atan2((p.y - y + 56), (p.x - x));
+		ropeVec[0] = Math.cos(ropeAng);
+		ropeVec[1] = Math.sin(ropeAng);
+	}
+
+	public void release() {
+		pointer = null;
+		ropeEnd = null;
+		rLatched = false;
+	}
+
+	public void forceMove(double x, double y) {
 		this.x += x;
 		this.y += y;
+	}
+
+	public Line2D.Float[] getBounds() {
+		genTrans.setToTranslation(x, y);
+		genTrans.rotate((getxVel()) / 120.0);
+		genTrans.transform(boundPts, 0, mvBoundPts, 0, boundPts.length);
+		return genLines(mvBoundPts);
 	}
 
 	public double getX() {
@@ -139,13 +181,6 @@ public class Player implements Drawable {
 
 	public void setyVel(double yVel) {
 		this.yVel = yVel;
-	}
-
-	public Line2D.Float[] getBounds() {
-		genTrans.setToTranslation(x, y);
-		genTrans.rotate((getxVel()) / 120.0);
-		genTrans.transform(boundPts, 0, mvBoundPts, 0, boundPts.length);
-		return genLines(mvBoundPts);
 	}
 
 	public void setxVel(double xVel) {
