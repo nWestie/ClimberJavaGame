@@ -5,6 +5,7 @@ import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.Line2D;
+import java.awt.geom.Line2D.Float;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
@@ -23,9 +24,10 @@ public class Player {
 	private double x, y;
 
 	private boolean rLatched = false;
-	private Point ropeEnd, pointer;
+	private Point pointer;
+	private Line2D.Float rope = new Line2D.Float();
 	private double ropeAng;
-	private double[] ropeVec = new double[2];
+	private double ropeLen;
 
 	public int inpDir = 0;
 	protected double acc = 3.4;
@@ -60,11 +62,24 @@ public class Player {
 	}
 
 	public void updateRequestVelocity() {
-		xVel += acc * inpDir;
-		xVel = (int) (xVel * (1 - dAcc));
-		yVel += accG;
-		x += xVel;
-		y += yVel;
+		if(rLatched) {
+			double xWeight, yWeight;
+			xWeight = pointer.x - x;
+			yWeight = pointer.y - y + 56;
+			double mag = Math.sqrt(Math.pow(xWeight, 2) + Math.pow(yWeight, 2));
+			xWeight /= mag;
+			yWeight /= mag;
+//			yWeight;
+			x+=xWeight*35;
+			y+=yWeight*20;
+			
+		}else {
+			xVel += acc * inpDir;
+			xVel = (int) (xVel * (1 - dAcc));
+			yVel += accG;
+			x += xVel;
+			y += yVel;
+		}
 		updateBounds();
 	}
 
@@ -88,10 +103,13 @@ public class Player {
 	}
 
 	public void draw(Graphics2D g2d, Point cursor) {
-
 		AffineTransform prev = g2d.getTransform();
 		AffineTransform drawTrans = (AffineTransform) prev.clone();
 		drawTrans.concatenate(genTrans);
+
+		g2d.setColor(Color.black);
+		g2d.draw(rope);
+
 		g2d.setTransform(drawTrans);
 
 		g2d.drawImage(body, null, -25, -98);
@@ -102,9 +120,12 @@ public class Player {
 		g2d.setTransform(drawTrans);
 		if (pointer == null)
 			ropeAng = -Math.atan2((cursor.y - y + 56), (cursor.x - x));
+		else
+			ropeAng = -Math.atan2((rope.y2 - rope.y1), (rope.x2-rope.x1));
+			
 		if (Math.abs(ropeAng) > Math.PI / 2) {
 			g2d.translate(laPiv.x, laPiv.y);
-			g2d.rotate(-ropeAng-5*Math.PI/4);
+			g2d.rotate(-ropeAng - 5 * Math.PI / 4);
 			g2d.drawImage(lArm, null, -31, -42);
 			g2d.setTransform(drawTrans);
 			g2d.translate(raPiv.x, raPiv.y);
@@ -113,34 +134,31 @@ public class Player {
 			g2d.translate(laPiv.x, laPiv.y);
 			g2d.drawImage(lArm, null, -31, -42);
 			g2d.translate(raPiv.x - laPiv.x, raPiv.y - laPiv.y);
-			g2d.rotate(-ropeAng-7*Math.PI/4);
+			g2d.rotate(-ropeAng - 7 * Math.PI / 4);
 			g2d.drawImage(rArm, null, -2, -42);
 		}
 		g2d.setTransform(prev);
-		g2d.setColor(Color.red);
-		g2d.drawString(String.format("%.2f", ropeAng * 180 / Math.PI), (int) x + 20, (int) y + 20);
-		g2d.drawLine((int) x, (int) y - 56, (int) (x + 100 * Math.cos(ropeAng)),
-				(int) (y - 56 - 100 * Math.sin(ropeAng)));
+		
+//		g2d.drawString(String.format("%.2f", ropeAng * 180 / Math.PI), (int) x + 20, (int) y + 20);
 //		Line2D.Float[] bounds = genLines(mvBoundPts);
 //		for (Line2D.Float l : bounds)
 //			g2d.draw(l);
 	}
 
-	public void updateRope() {
-
-	}
 
 	public void ropeTo(Point p) {
-		pointer = p;
+		pointer = (Point) p.clone();
 		ropeAng = -Math.atan2((p.y - y + 56), (p.x - x));
-		ropeVec[0] = Math.cos(ropeAng);
-		ropeVec[1] = Math.sin(ropeAng);
+		ropeLen = 0;
 	}
-
-	public void release() {
+	public void setRope(Line2D.Float r) {
+		rope = r;
+	}
+	public void releaseRope() {
 		pointer = null;
-		ropeEnd = null;
+		ropeLen = 0;
 		rLatched = false;
+		rope = new Line2D.Float();
 	}
 
 	public void forceMove(double x, double y) {
@@ -189,6 +207,30 @@ public class Player {
 
 	public Point[] getMvBoundPts() {
 		return mvBoundPts;
+	}
+
+	public Point getPointer() {
+		return pointer;
+	}
+
+	public double getRopeLen() {
+		return ropeLen;
+	}
+
+	public void setRopeLen(double ropeLen) {
+		this.ropeLen = ropeLen;
+	}
+
+	public Line2D.Float getRope() {
+		return rope;
+	}
+
+	public boolean isrLatched() {
+		return rLatched;
+	}
+
+	public void setrLatched(boolean rLatched) {
+		this.rLatched = rLatched;
 	}
 
 }

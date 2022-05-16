@@ -9,5 +9,6 @@ class Pallete {
 	static Color blackish = new Color(0x1b1615);
 	static Color lightGrey = new Color(0x93948e);
 	static Font menuFont  = new Font("Sans", Font.BOLD, 80);
+	static Font menuFontSmall  = new Font("Sans", Font.BOLD, 50);
 
 }

@@ -2,15 +2,18 @@ package main;
 
 import java.awt.Color;
 import java.awt.Container;
+import java.awt.Cursor;
 import java.awt.Frame;
 
 import javax.swing.JFrame;
 
 public class ClimberMain extends JFrame {
 	private static final long serialVersionUID = 1L;
+	private static final boolean BUILDER = false;
 	public static final String dir = System.getProperty("user.dir");
 	protected static final int fRate = 30;
-	protected static  boolean exitFlag = false;
+	protected static boolean exitFlag = false;
+
 	public ClimberMain(String s) {
 		super(s);
 
@@ -27,16 +30,23 @@ public class ClimberMain extends JFrame {
 		cont.setBackground(Color.black);
 		cont.setLayout(null);
 		frame.setVisible(true);
+		frame.setCursor(new Cursor(Cursor.CROSSHAIR_CURSOR));
+
 		while (true) {
-//			Menu menu = new Menu(frame);
-//			cont.add(menu);
-//			int levelNum = menu.waitForSelection();
-//			cont.remove(menu);
-//			Level l1 = new LevelBuilder(frame);
-			Level l1 = new Level(frame, 1, 3, 18);
-			cont.add(l1);
+			Level lvl;
+			if (BUILDER) {
+				lvl = new LevelBuilder(frame, 1);
+			} else {
+				Menu menu = new Menu(frame);
+				cont.add(menu);
+				int levelNum = menu.waitForSelection();
+				cont.remove(menu);
+				lvl = new Level(frame, 1, false);
+			}
+			cont.add(lvl);
 			frame.repaint();
-			l1.play();
+			lvl.play();
+			cont.remove(lvl);
 		}
 	}
 

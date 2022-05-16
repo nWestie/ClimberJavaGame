@@ -12,7 +12,7 @@ import javax.swing.JPanel;
 
 public class Menu extends JPanel {
 	FScale scaler;
-	volatile int levelSel;
+	volatile int levelSel = 1;
 	volatile boolean playLevel;
 	private Dimension size;
 	protected DrawableRect[] menuObjs = new DrawableRect[9];
@@ -30,6 +30,7 @@ public class Menu extends JPanel {
 			menuObjs[3] = new MenuLevel(x, y + vs, 4, true);
 			menuObjs[4] = new MenuLevel(x + hs, y + vs, 5, true);
 			menuObjs[5] = new MenuLevel(x + hs + hs, y + vs, 6, true);
+			menuObjs[0].selected = true;
 		}
 		{
 			int x = 72, y = 410, vs = 160, h = 63;
@@ -81,7 +82,7 @@ public class Menu extends JPanel {
 					else {
 						switch (((MenuText) l).string) {
 						case "PLAY":
-							if (levelSel > 0)
+							if (levelSel == 1)
 								playLevel = true;
 							break;
 						case "EXIT":

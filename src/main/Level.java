@@ -1,6 +1,5 @@
 package main;
 
-import java.awt.Color;
 import java.awt.Container;
 import java.awt.Cursor;
 import java.awt.Graphics;
@@ -11,6 +10,7 @@ import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.awt.geom.Line2D;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -31,10 +31,10 @@ public class Level extends JPanel {
 	protected int blockW = Block.width, blockH = Block.height;
 	protected int xScroll, yScroll = 10 * blockH;
 	private Point cursor = new Point();
+	private boolean dieFlag;
 
-	public Level(Container cont, String lvlFile, int plrX, int plrY, boolean noListen) {
+	public Level(Container cont, int lvlNum, boolean noListen) {
 		scaler = new FScale(cont, this, 1920, 1080);
-		setCursor(new Cursor(Cursor.CROSSHAIR_CURSOR));
 //        setCursor(Toolkit.getDefaultToolkit().createCustomCursor(
 //        		new ImageIcon("my-cursor.png").getImage(),new Point(0,0),"My cursor"));
 		if (!noListen) {
@@ -44,9 +44,11 @@ public class Level extends JPanel {
 			addMouseListener(mouse);
 			addMouseMotionListener(mouse);
 		}
-		plr = new Player(plrX * blockW, plrY * blockH - 19);
+		int[] startX = { 0, 3 };
+		int[] startY = { 0, 18 };
+		plr = new Player(startX[lvlNum] * blockW, startY[lvlNum] * blockH - 19);
 		blocks = Block.getBlockList();
-		lvlEnvFile = new File(ClimberMain.dir, lvlFile);
+		lvlEnvFile = new File(ClimberMain.dir, String.format("/Lvls/Lvl%d.clvl", lvlNum));
 		try (ObjectInputStream inStream = new ObjectInputStream(new FileInputStream(lvlEnvFile));) {
 			Object tmpRead = inStream.readObject();
 			if (!(tmpRead instanceof int[][])) {
@@ -59,9 +61,6 @@ public class Level extends JPanel {
 		}
 	}
 
-	public Level(Container cont, int lvlFile, int plrX, int plrY) {
-		this(cont, String.format("/Lvls/Lvl%d.clvl", lvlFile), plrX, plrY, false);
-	}
 
 	public void play() {
 		requestFocusInWindow();
@@ -69,9 +68,22 @@ public class Level extends JPanel {
 		while (true) {
 			nextLoopTime = System.currentTimeMillis() + 1000 / ClimberMain.fRate;
 
+			if (plr.getX() - xScroll > 1420)
+				xScroll = (int) (plr.getX() - 1420);
+			else if (plr.getX() - xScroll < 300)
+				xScroll = (int) (plr.getX() - 300);
+			if (plr.getY() - yScroll > 880)
+				yScroll = (int) (plr.getY() - 880);
+			else if (plr.getY() - yScroll < 600)
+				yScroll = (int) (plr.getY() - 600);
 			plr.updateRequestVelocity();
 			solvePhysics();
-			
+			if (plr.getY() > board.length * blockH + 100) {
+				dieFlag = true;
+				while (dieFlag)
+					repaint();
+				return;
+			}
 			repaint();
 			while (System.currentTimeMillis() < nextLoopTime)
 				;
@@ -94,7 +106,7 @@ public class Level extends JPanel {
 				}
 			}
 			if (sVecs[0] == 0 && sVecs[1] == 0)
-				return;
+				break;
 			double mag = Math.sqrt(Math.pow(sVecs[0], 2) + Math.pow(sVecs[1], 2));
 			sVecs[0] /= mag;
 			sVecs[1] /= mag;
@@ -106,26 +118,67 @@ public class Level extends JPanel {
 				plr.setyVel(0);
 			repaint();
 		}
+		// Update player rope
+		Point ptr = plr.getPointer();
+		if (ptr == null)
+			return;
+		Line2D.Float rope = plr.getRope();
+		rope.x1 = (float) plr.getX();
+		rope.y1 = (float) (plr.getY() - 56);
+		if (plr.isrLatched())
+			return;
+		double xWeight, yWeight;
+		xWeight = ptr.x - plr.getX();
+		yWeight = ptr.y - plr.getY() + 56;
+		double mag = Math.sqrt(Math.pow(xWeight, 2) + Math.pow(yWeight, 2));
+		xWeight /= mag;
+		yWeight /= mag;
+		double ropeLen = plr.getRopeLen()*1.1 + 30;
+		rope.x2 = (int) (rope.x1 + ropeLen * xWeight);
+		rope.y2 = (int) (rope.y1 + ropeLen * yWeight);
+		while (true) {
+			int xBlock = (int) rope.x2 / Block.width;
+			int yBlock = (int) rope.y2 / Block.height;
+			Line2D.Float tmp = new Line2D.Float(rope.x1 - xBlock * Block.width, rope.y1 - yBlock * Block.height,
+					rope.x2 - xBlock * Block.width, rope.y2 - yBlock * Block.height);
+			boolean intersect = false;
+			try {
+				for (Line2D.Float blockL : blocks[board[yBlock][xBlock]].getBounds()) {
+					if (tmp.intersectsLine(blockL)) {
+						intersect = true;
+						break;
+					}
+				}
+			} catch (Exception e) {
+				System.out.println("Rope Bounds err");
+			}
+			if (!intersect)
+				break;
+			plr.setrLatched(true);
+			rope.x2 -= xWeight * 4;
+			rope.y2 -= yWeight * 4;
+		}
+		plr.setRope(rope);
+		plr.setRopeLen(ropeLen);
+
 	}
 
 	@Override
 	public void paintComponent(Graphics g) {
 		super.paintComponent(g);
 		Graphics2D g2d = scaler.scale(g);
-		g2d.translate(-xScroll, -yScroll);
-
-		Rectangle bounds = scaler.drawSize();
-
 		// clamp scrolling to board size
-		xScroll = Math.max(0, Math.min(xScroll, (board[0].length) * blockW - bounds.width - 1));
+		Rectangle bounds = scaler.drawSize();
+		xScroll = Math.max(12, Math.min(xScroll, (board[0].length) * blockW - bounds.width - 1));
 		yScroll = Math.max(0, Math.min(yScroll, (board.length) * blockH - bounds.height - 1));
+		g2d.translate(-xScroll, -yScroll);
 
 		// draw background tiles
 		Rectangle bBounds = new Rectangle(0, 0, 0, 0); // bounds in units of BG tiles
-		bBounds.x = (xScroll + bounds.x) / blockW;
-		bBounds.y = (yScroll + bounds.y) / blockH;
-		bBounds.width = (xScroll + bounds.width + bounds.x) / blockW + 1;
-		bBounds.height = (yScroll + bounds.height + bounds.y) / blockH + 1;
+		bBounds.x = (xScroll) / blockW;
+		bBounds.y = (yScroll) / blockH;
+		bBounds.width = (xScroll + bounds.width) / blockW + 1;
+		bBounds.height = (yScroll + bounds.height) / blockH + 1;
 		for (int i = bBounds.y; i < bBounds.height; i++) {
 			for (int j = bBounds.x; j < bBounds.width; j++) {
 				g2d.drawImage(blocks[board[i][j]].getImg(), null, j * blockW, i * blockH);
@@ -133,7 +186,20 @@ public class Level extends JPanel {
 		}
 		// draw player
 		plr.draw(g2d, cursor);
-		
+		Line2D.Float rope = plr.getRope();
+		int xBlock = (int) rope.x2 / Block.width;
+		int yBlock = (int) rope.y2 / Block.height;
+		for (Line2D.Float blockL : blocks[board[yBlock][yBlock]].getBounds()) {
+			g2d.draw(blockL);
+		}
+		g2d.translate(xScroll, yScroll);
+		if (dieFlag) {
+			g2d.setFont(Pallete.menuFont);
+			g2d.drawString("YOU DIED", 700, 600);
+			g2d.setFont(Pallete.menuFontSmall);
+			g2d.drawString("Click to Continue", 680, 650);
+		}
+
 	}
 
 	/**
@@ -212,11 +278,14 @@ public class Level extends JPanel {
 		}
 
 		@Override
-		public void mouseClicked(MouseEvent e) {
+		public void mousePressed(MouseEvent e) {
 			plr.ropeTo(cursor);
+			dieFlag = false;
 		}
+
+		@Override
 		public void mouseReleased(MouseEvent e) {
-			plr.release();
+			plr.releaseRope();
 		}
 
 	}
