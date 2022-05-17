@@ -23,6 +23,7 @@ import objs.Player;
 
 public class Level extends JPanel {
 	private static final long serialVersionUID = 1L;
+	public final static int DIE = 1, WIN = 2;
 	protected FScale scaler;
 	protected File lvlEnvFile;
 	protected Player plr;
@@ -31,7 +32,7 @@ public class Level extends JPanel {
 	protected int blockW = Block.width, blockH = Block.height;
 	protected int xScroll, yScroll = 10 * blockH;
 	private Point cursor = new Point();
-	public volatile int dieFlag = 0; // 1 is die, 2 win
+	public volatile int dieFlag = 0;
 
 	public Level(Container cont, int lvlNum, boolean noListen) {
 		scaler = new FScale(cont, this, 1920, 1080);
@@ -44,8 +45,8 @@ public class Level extends JPanel {
 			addMouseListener(mouse);
 			addMouseMotionListener(mouse);
 		}
-		int[] startX = { 0, 3 };
-		int[] startY = { 0, 18 };
+		int[] startX = { 0, 3, 3 };
+		int[] startY = { 0, 18, 37 };
 		plr = new Player(startX[lvlNum] * blockW, startY[lvlNum] * blockH - 19);
 		blocks = Block.getBlockList();
 		lvlEnvFile = new File(ClimberMain.dir, String.format("/Lvls/Lvl%d.clvl", lvlNum));
@@ -67,10 +68,10 @@ public class Level extends JPanel {
 		while (true) {
 			nextLoopTime = System.currentTimeMillis() + 1000 / ClimberMain.fRate;
 
-			if (plr.getX() - xScroll > 1420)
-				xScroll = (int) (plr.getX() - 1420);
-			else if (plr.getX() - xScroll < 300)
-				xScroll = (int) (plr.getX() - 300);
+			if (plr.getX() - xScroll > 1320)
+				xScroll = (int) (plr.getX() - 1320);
+			else if (plr.getX() - xScroll < 600)
+				xScroll = (int) (plr.getX() - 600);
 			if (plr.getY() - yScroll > 880)
 				yScroll = (int) (plr.getY() - 880);
 			else if (plr.getY() - yScroll < 600)
@@ -79,7 +80,7 @@ public class Level extends JPanel {
 			solvePhysics();
 			if (plr.getY() > board.length * blockH + 100 || dieFlag != 0) {
 				if (dieFlag == 0)
-					dieFlag = 1;
+					dieFlag = DIE;
 				int tmp = dieFlag;
 				repaint();
 				while (dieFlag != 0)
@@ -95,13 +96,7 @@ public class Level extends JPanel {
 	private void solvePhysics() {
 		int plrBX = (int) plr.getX() / blockW;
 		int plrBY = (int) plr.getY() / blockH;
-		try {
-			if (board[plrBY][plrBX] == 24) {
-				dieFlag = 2;
-				return;
-			}
-		} catch (ArrayIndexOutOfBoundsException e) {
-		}
+		plr.setOnGround(false);
 		while (true) {
 			float[] sVecs = new float[2];
 			plr.updateBounds();
@@ -111,7 +106,11 @@ public class Level extends JPanel {
 				for (int i = plrBY - 1; i <= plrBY + 1; i++) {
 					if (i < 0 || i >= board.length)
 						continue;
-					blocks[board[i][j]].addCollisionVecs(j, i, plr.getMvBoundPts(), sVecs);
+					int dieWin = blocks[board[i][j]].addCollisionVecs(j, i, plr.getMvBoundPts(), sVecs);
+					if (dieWin != 0) {
+						dieFlag = dieWin;
+						return;
+					}
 				}
 			}
 			if (sVecs[0] == 0 && sVecs[1] == 0)
@@ -122,9 +121,11 @@ public class Level extends JPanel {
 //			System.out.println(Arrays.toString(sVecs));
 			plr.forceMove(sVecs[0], -sVecs[1]);
 			if (Math.abs(sVecs[0]) > .8)
-				plr.setxVel(0);
-			if (Math.abs(sVecs[1]) > .8)
-				plr.setyVel(0);
+				plr.setxVel(plr.getyVel() * .2);
+			if (Math.abs(sVecs[1]) > .8) {
+				plr.setyVel(plr.getyVel() * .2);
+				plr.setOnGround(true);
+			}
 			repaint();
 		}
 		// Update player rope
@@ -142,7 +143,7 @@ public class Level extends JPanel {
 		double mag = Math.sqrt(Math.pow(xWeight, 2) + Math.pow(yWeight, 2));
 		xWeight /= mag;
 		yWeight /= mag;
-		double ropeLen = plr.getRopeLen() * 1.1 + 30;
+		double ropeLen = plr.getRopeLen() * 1.15 + 40;
 		if (ropeLen > 600) {
 			plr.releaseRope();
 			return;
@@ -152,14 +153,23 @@ public class Level extends JPanel {
 		while (true) {
 			int xBlock = (int) rope.x2 / Block.width;
 			int yBlock = (int) rope.y2 / Block.height;
-			Line2D.Float tmp = new Line2D.Float(rope.x1 - xBlock * Block.width, rope.y1 - yBlock * Block.height,
-					rope.x2 - xBlock * Block.width, rope.y2 - yBlock * Block.height);
 			boolean intersect = false;
 			try {
-				for (Line2D.Float blockL : blocks[board[yBlock][xBlock]].getBounds()) {
-					if (tmp.intersectsLine(blockL)) {
-						intersect = true;
-						break;
+				for (int j = xBlock - 1; j <= xBlock + 1; j++) {
+					if (j < 0 || j >= board[0].length)
+						continue;
+					for (int i = yBlock - 1; i <= yBlock + 1; i++) {
+						if (i < 0 || i >= board.length)
+							continue;
+						int w = Block.width, h = Block.height;
+						Line2D.Float tmp = new Line2D.Float(rope.x1 - j * w, rope.y1 - i * h, rope.x2 - j * w,
+								rope.y2 - i * h);
+						for (Line2D.Float blockL : blocks[board[i][j]].getBounds()) {
+							if (tmp.intersectsLine(blockL)) {
+								intersect = true;
+								break;
+							}
+						}
 					}
 				}
 			} catch (Exception e) {

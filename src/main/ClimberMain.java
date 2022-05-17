@@ -12,7 +12,7 @@ public class ClimberMain extends JFrame {
 	private static int BUILDER = 0;
 	public static final String dir = System.getProperty("user.dir");
 	protected static final int fRate = 30;
-	protected static boolean exitFlag = false;
+//	protected static boolean exitFlag = false;
 
 	public ClimberMain(String s) {
 		super(s);
@@ -37,7 +37,7 @@ public class ClimberMain extends JFrame {
 		while (true) {
 			Level lvl;
 			if (BUILDER != 0) {
-				lvl = new LevelBuilder(frame, 1);
+				lvl = new LevelBuilder(frame, BUILDER);
 			} else {
 				cont.add(menu);
 				levelNum = menu.waitForSelection();

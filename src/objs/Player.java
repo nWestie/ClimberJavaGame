@@ -5,7 +5,6 @@ import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.Line2D;
-import java.awt.geom.Line2D.Float;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
@@ -24,6 +23,7 @@ public class Player {
 	private double x, y;
 
 	private boolean rLatched = false;
+	private boolean onGround = false;
 	private Point pointer;
 	private Line2D.Float rope = new Line2D.Float();
 	private double ropeAng;
@@ -32,7 +32,7 @@ public class Player {
 	public int inpDir = 0;
 	protected double acc = 3.4;
 	protected double dAcc = .1;
-	protected double accG = 4;
+	protected double accG = 2;
 	protected Point[] boundPts, mvBoundPts;
 
 	public Player(int x, int y) {
@@ -70,10 +70,10 @@ public class Player {
 			xWeight /= mag;
 			yWeight /= mag;
 //			yWeight;
-			xVel += 6*xWeight;
-			yVel += 6*yWeight;
+			xVel += 4*xWeight;
+			yVel += 4*yWeight;
 			xVel *= .95; 
-		}else {
+		}else if(onGround){
 			xVel += acc * inpDir;
 			xVel = (int) (xVel * (1 - dAcc));
 		}
@@ -232,6 +232,14 @@ public class Player {
 
 	public void setrLatched(boolean rLatched) {
 		this.rLatched = rLatched;
+	}
+
+	public boolean isOnGround() {
+		return onGround;
+	}
+
+	public void setOnGround(boolean onGround) {
+		this.onGround = onGround;
 	}
 
 }

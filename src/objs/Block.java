@@ -8,6 +8,7 @@ import java.io.File;
 import javax.imageio.ImageIO;
 
 import main.ClimberMain;
+import main.Level;
 
 /**
  * Defines the image and collision box for each block type
@@ -19,17 +20,19 @@ public class Block {
 	private final BufferedImage img;
 	private final Line2D.Float[] bounds;
 	private final float[][] vecs;
+	private final int dieWin;
 	public final static int width = 151, height = 111;
 	private static Block[] blocks;
 
-	public Block(BufferedImage img, Line2D.Float[] bounds, float[][] vecs) {
+	public Block(BufferedImage img, Line2D.Float[] bounds, float[][] vecs, int dieWin) {
 		this.img = img;
 		this.bounds = bounds;
 		this.vecs = vecs;
+		this.dieWin = dieWin;
 	}
 
-	public void addCollisionVecs(int xBlock, int yBlock, Point[] obj, float[] outVec) {
-		
+	public int addCollisionVecs(int xBlock, int yBlock, Point[] obj, float[] outVec) {
+		boolean collided = false;
 		Point[] tObj = new Point[obj.length];
 		Line2D.Float[] tLines = new Line2D.Float[obj.length];
 		int xOff = xBlock * width;
@@ -42,27 +45,30 @@ public class Block {
 				if (bounds[i].intersectsLine(tLines[j])) {
 					outVec[0] += getVecs()[i][0];
 					outVec[1] += getVecs()[i][1];
+					collided = true;
 					break;
 				}
 			}
 		}
+		return collided ? dieWin : 0;
 	}
 
 	private static void genBlocks() {
 		blocks = new Block[25];
 		Line2D.Float[][] areas = genBoundLines();
 		float[][][] vecList = genCollisionVectors();
+//		int[] dieWin = new int[blocks.length];
+//		dieWin[24] = WIN;
 		try {
 			BufferedImage master = ImageIO.read(new File(ClimberMain.dir, "/Imgs/Blocks.png"));
 			for (int i = 0; i < 4; i++) {
 				for (int j = 0; j < 6; j++) {
 					int ind1D = i * 6 + j;
 					blocks[ind1D] = new Block(master.getSubimage(i * 153, j * 112, 151, 111), areas[ind1D],
-							vecList[ind1D]);
+							vecList[ind1D], 0);
 				}
 			}
-			blocks[24] = new Block(master.getSubimage(4 * 153, 0 * 112, 151, 111), areas[24],vecList[24]);
-			
+			blocks[24] = new Block(master.getSubimage(4 * 153, 0 * 112, 151, 111), areas[24], vecList[24], Level.WIN);
 
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
@@ -97,12 +103,12 @@ public class Block {
 		vecs[21] = new float[][] { { 1f, 0f }, { 0f, -1f }, { -.591f, .806f } };
 		vecs[22] = new float[][] { { 0f, 1f }, { 1f, 0f }, { 0f, -1f }, { -1f, 0f } };
 		vecs[23] = new float[][] {};
-		vecs[24] = new float[][] {};
+		vecs[24] = new float[][] { { 0f, 1f }, { 1f, 0f }, { 0f, -1f }, { -1f, 0f } };
 
 		return vecs;
 	}
 
-	private static Line2D.Float[][] genBoundLines() {
+ 	private static Line2D.Float[][] genBoundLines() {
 		Line2D.Float[][] a = new Line2D.Float[blocks.length][];
 		a[0] = makeLineArray(new int[] { 0, 151, 99, 0 }, new int[] { 0, 0, 111, 111 }, 4);
 		a[1] = makeLineArray(new int[] { 0, 100, 50, 0 }, new int[] { 0, 0, 111, 111 }, 4);
@@ -128,7 +134,7 @@ public class Block {
 		a[21] = makeLineArray(new int[] { 151, 151, 0 }, new int[] { 0, 111, 111 }, 3);
 		a[22] = makeLineArray(new int[] { 0, 151, 151, 0 }, new int[] { 0, 0, 111, 111 }, 4);
 		a[23] = makeLineArray(new int[] {}, new int[] {}, 0);
-		a[24] = makeLineArray(new int[] {}, new int[] {}, 0);
+		a[24] = makeLineArray(new int[] { 10, 141, 141, 10 }, new int[] { 10, 10, 101, 101 }, 4);
 		return a;
 	}
 

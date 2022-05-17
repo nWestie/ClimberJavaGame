@@ -11,8 +11,8 @@ public class ModLvl {
 	private File lvlEnvFile;
 	private int[][] board;
 
-	public ModLvl() {
-		lvlEnvFile = new File(ClimberMain.dir, "/Lvls/LvlTest.clvl");
+	public ModLvl(int lvlNum) {
+		lvlEnvFile =  new File(ClimberMain.dir, String.format("/Lvls/Lvl%d.clvl", lvlNum));
 		try (ObjectInputStream inStream = new ObjectInputStream(new FileInputStream(lvlEnvFile));) {
 			Object tmpRead = inStream.readObject();
 			if (!(tmpRead instanceof int[][])) {
@@ -26,13 +26,12 @@ public class ModLvl {
 	}
 
 	public static void main(String[] args) {
-		ModLvl l = new ModLvl();
-		int[] tmp = new int[l.board[0].length];
-		for (int i = 0; i < tmp.length; i++) {
-			tmp[i] = 22;
-		}
-		for (int i = 0; i < l.board.length - 4; i++) {
-			l.board[i] = tmp.clone();
+		ModLvl l = new ModLvl(2);
+		l.board = new int[40][100];
+		for (int i = 0; i < l.board.length; i++) {
+			for (int j = 0; j < l.board[i].length; j++) {
+				l.board[i][j] = 22; 
+			}
 		}
 		l.update();
 		System.out.println("Done");

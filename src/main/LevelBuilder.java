@@ -11,7 +11,6 @@ import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseWheelEvent;
-import java.awt.geom.AffineTransform;
 import java.awt.geom.Line2D;
 import java.io.FileOutputStream;
 import java.io.ObjectOutputStream;
@@ -48,16 +47,16 @@ public class LevelBuilder extends Level {
 	public void paintComponent(Graphics g) {
 		super.paintComponent(g, true);
 		Rectangle bounds = scaler.drawSize();
-		
-		//clamp scrolling to board size
+
+		// clamp scrolling to board size
 		x = Math.max(0, Math.min(x, (board[0].length) * w - bounds.width - 1));
 		y = Math.max(0, Math.min(y, (board.length) * h - bounds.height - 1));
 
 		Graphics2D g2d = scaler.scale(g);
 		g2d.translate(-x, -y);
 		g2d.setColor(Color.red);
-		
-		//draw background tiles
+
+		// draw background tiles
 		Rectangle bBounds = new Rectangle(0, 0, 0, 0); // bounds in units of BG tiles
 		bBounds.x = (x + bounds.x) / w;
 		bBounds.y = (y + bounds.y) / h;
@@ -73,20 +72,20 @@ public class LevelBuilder extends Level {
 		} catch (Exception e) {
 			System.out.println("BG Bounds err");
 		}
-		g2d.translate(cursor.x*w, cursor.y*h);
+		g2d.translate(cursor.x * w, cursor.y * h);
 		final int len = 10;
 		Line2D.Float[] lines = blocks[board[cursor.y][cursor.x]].getBounds();
-		float[][] vecs = blocks[board[cursor.y][cursor.x]].getVecs(); 
+		float[][] vecs = blocks[board[cursor.y][cursor.x]].getVecs();
 		g2d.drawString(String.valueOf(board[cursor.y][cursor.x]), 10, 30);
-		for(int i = 0; i < lines.length; i++) {			
+		for (int i = 0; i < lines.length; i++) {
 			g2d.setColor(Color.red);
 			g2d.draw(lines[i]);
 			g2d.setColor(Color.green);
-			float midX = (lines[i].x1+lines[i].x2)/2;
-			float midY = (lines[i].y1+lines[i].y2)/2;
-			g2d.drawLine((int)midX, (int)midY, (int)(midX+len*vecs[i][0]), (int)(midY-len*vecs[i][1]));
+			float midX = (lines[i].x1 + lines[i].x2) / 2;
+			float midY = (lines[i].y1 + lines[i].y2) / 2;
+			g2d.drawLine((int) midX, (int) midY, (int) (midX + len * vecs[i][0]), (int) (midY - len * vecs[i][1]));
 		}
-		g2d.translate(-cursor.x*w, -cursor.y*h);
+		g2d.translate(-cursor.x * w, -cursor.y * h);
 		g2d.translate(x, y);
 		g2d.drawString(String.format("%d, %d", cursor.x, cursor.y), 20, 20);
 	}
@@ -129,6 +128,14 @@ public class LevelBuilder extends Level {
 				envWriter.update();
 				break;
 			case KeyEvent.VK_ESCAPE:
+				envWriter.update();
+				envWriter.reqExit();
+				try {
+					envWriter.join();
+				} catch (InterruptedException e1) {
+					// TODO Auto-generated catch block
+					e1.printStackTrace();
+				}
 				System.exit(0);
 			}
 			x += spd * (r - l);
@@ -183,11 +190,12 @@ public class LevelBuilder extends Level {
 
 	private class WriteEnv extends Thread {
 		private volatile boolean update;
-
+		private volatile boolean exitFlag;
+		
 		@Override
 		public void run() {
 //			System.out.println("Started envWirte");
-			while (!ClimberMain.exitFlag) {
+			while (!exitFlag) {
 				while (!update)
 					;
 				update = false;
@@ -204,6 +212,9 @@ public class LevelBuilder extends Level {
 
 		public void update() {
 			update = true;
+		}
+		public void reqExit() {
+			exitFlag = true;
 		}
 	}
 }
