@@ -191,7 +191,7 @@ public class LevelBuilder extends Level {
 	private class WriteEnv extends Thread {
 		private volatile boolean update;
 		private volatile boolean exitFlag;
-		
+
 		@Override
 		public void run() {
 //			System.out.println("Started envWirte");
@@ -213,6 +213,7 @@ public class LevelBuilder extends Level {
 		public void update() {
 			update = true;
 		}
+
 		public void reqExit() {
 			exitFlag = true;
 		}
